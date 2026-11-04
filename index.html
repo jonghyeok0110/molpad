@@ -1,0 +1,1680 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="분자 드로잉">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f3f4f5">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<title>분자 드로잉 패드</title>
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}body{margin:0;font:14px/1.4 system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 라이트 전용 디자인 (선결합 구조식은 흰 바탕 기준). 레이아웃: 흰 캔버스 전체 화면 + 떠 있는 패널 (왼쪽 원소 열, 오른쪽 조작 열, 아래 가운데 도구판, 오른쪽 위 라이브러리) */
+:root{
+  --bar:#f3f4f5; --bg:#ffffff; --panel:#ffffff; --panel-2:#f4f5f7; --line:#dde1e5; --press:#e8ebee;
+  --ink:#1b1f24; --icon:#3b4148; --muted:#6c747d; --accent:#2a6ad1; --accent-soft:rgba(42,106,209,.16); --accent-ink:#ffffff;
+  --erase:rgba(214,48,39,.18); --erase-line:#d63027; --shadow:0 1px 2px rgba(20,30,40,.07),0 4px 14px rgba(20,30,40,.06);
+  --el-n:#2547d0; --el-o:#e0261f; --el-s:#b08a00; --el-p:#d06400; --el-hal:#13893a; --el-br:#9a3320; --el-i:#7b26aa; --el-x:#6b4fa8;
+  --c-red:#d8261f; --c-blue:#2453d6; --c-green:#16883c; --c-orange:#d46a00; --c-purple:#7c34b8;
+  --danger:#b3261e;
+  --f-ui:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+:root{color-scheme:light}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);overflow:hidden;overscroll-behavior:none}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bar)}
+*{box-sizing:border-box}
+/* 길게 눌러도 글자 선택·확대경·콜아웃이 뜨지 않게 (입력칸과 시트 안 글은 예외) */
+.app,.v3,.app *,.v3 *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,.sheet .kv dd,.sheet .tbl{-webkit-user-select:text;user-select:text}
+.imgwrap img{-webkit-touch-callout:default}
+/* 두 손가락 확대가 페이지 전체가 아니라 캔버스에만 걸리도록: 기본은 브라우저 제스처 끔, 스크롤이 필요한 곳만 한 방향 허용 */
+html,body,.app,.v3{touch-action:none}
+.sheet,.lcol .fl{touch-action:pan-y}
+.vrow{touch-action:pan-x}
+.ptab{touch-action:pan-x pan-y}
+button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+svg.i{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;display:block}
+.app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);grid-template-columns:minmax(0,1fr)}
+
+/* 상단 바 */
+.bar{display:flex;align-items:center;gap:8px;background:var(--bar);border-bottom:1px solid var(--line);
+  padding-block:6px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px));
+  box-shadow:0 1px 4px rgba(0,0,0,.05);position:relative;z-index:3}
+.ttl{flex:1;width:0;min-width:0;max-width:520px;margin-right:auto;height:38px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--ink);font:inherit;font-size:17px;font-weight:500;padding:0 8px;margin-left:-8px;text-overflow:ellipsis}
+.ttl:hover{border-color:var(--line)}
+.ttl:focus{outline:none;border-color:var(--accent);background:var(--bg)}
+.ttl::placeholder{color:var(--muted);font-weight:400}
+.ib{flex:none;width:42px;height:42px;border:0;background:transparent;border-radius:8px;display:grid;place-items:center;cursor:pointer;color:var(--icon)}
+.ib:hover{background:var(--press)}
+.ib:disabled{opacity:.3;cursor:default;background:transparent}
+.vsep{width:1px;height:26px;background:var(--line);flex:none}
+
+/* 캔버스 */
+.stage{position:relative;overflow:hidden;background:var(--bg)}
+#svg{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.fl{background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
+.tb{border:0;background:transparent;color:var(--icon);cursor:pointer;display:grid;place-items:center;position:relative;border-radius:7px}
+.tb:hover{background:var(--press)}
+.tb[aria-pressed="true"]{background:var(--press);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.tb:disabled{opacity:.3;cursor:default;background:transparent}
+.tb.var::after{content:"";position:absolute;right:2px;top:2px;border-style:solid;border-width:0 6px 6px 0;border-color:transparent var(--icon) transparent transparent;opacity:.75}
+
+.tr{position:absolute;top:10px;right:max(10px,env(safe-area-inset-right,0px));display:flex;gap:8px;z-index:2}
+.tr .tb{width:48px;height:48px}
+
+.lcol{position:absolute;left:max(0px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%);z-index:2;transition:transform .2s ease}
+.lcol .fl{display:flex;flex-direction:column;padding:4px;border-radius:0 10px 10px 0;border-left:0;max-height:calc(100vh - 220px);overflow-y:auto;scrollbar-width:none}
+.lcol .tb{width:44px;height:44px;font-size:18px;font-weight:400}
+.lcol .tab{position:absolute;left:100%;top:50%;transform:translateY(-50%);width:22px;height:56px;border:1px solid var(--line);border-left:0;background:var(--panel);border-radius:0 8px 8px 0;cursor:pointer;color:var(--muted);font-size:11px;box-shadow:var(--shadow)}
+.lcol.collapsed{transform:translate(calc(-100% - 1px),-50%)}
+.lcol.collapsed .tab span{display:inline-block;transform:scaleX(-1)}
+
+.rcol{position:absolute;right:max(8px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:2}
+.rcol .fl{display:flex;flex-direction:column;padding:3px;gap:2px}
+.rcol .tb{width:44px;height:44px}
+
+.bp{position:absolute;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(364px,calc(100% - 16px));z-index:2;overflow:hidden;padding:0}
+.vrow{display:flex;gap:2px;padding:3px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);min-height:52px;align-items:center}
+.vrow::-webkit-scrollbar{display:none}
+.vrow .tb{flex:none;width:46px;height:44px}
+.vrow .chip{flex:none;height:36px;padding:0 11px;border-radius:7px;border:1px solid var(--line);background:var(--panel-2);font-size:13.5px;cursor:pointer;white-space:nowrap}
+.vrow .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.vrow .act{flex:none;height:38px;padding:0 10px;border-radius:7px;border:1px solid var(--line);background:var(--panel-2);font-size:13px;cursor:pointer;white-space:nowrap;display:flex;gap:4px;align-items:center}
+.vrow .act:hover,.vrow .chip:hover{border-color:var(--accent)}
+.vrow .hint{font-size:12.5px;color:var(--muted);padding:0 8px;line-height:1.35}
+.sw{width:22px;height:22px;border-radius:50%;display:block}
+.trow{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:3px;background:var(--panel-2)}
+.trow+.trow{padding-top:0}
+.trow .tb{height:46px}
+.tb .t3{font-size:15px;font-weight:500;letter-spacing:.02em}
+
+.toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:12.5px;padding:7px 12px;border-radius:8px;max-width:calc(100% - 140px);text-align:center;z-index:4}
+
+/* 원소 색 */
+.e-H,.e-C{color:var(--ink)} .e-N{color:var(--el-n)} .e-O{color:var(--el-o)} .e-S{color:var(--el-s)} .e-P{color:var(--el-p)} .e-F,.e-Cl{color:var(--el-hal)} .e-Br{color:var(--el-br)} .e-I{color:var(--el-i)} .e-x{color:var(--el-x)}
+
+/* 시트 */
+.sheet-bg{position:fixed;inset:0;background:rgba(10,16,22,.38);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{width:100%;max-width:680px;background:var(--panel);border:1px solid var(--line);border-radius:16px 16px 0 0;
+  padding:14px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  display:flex;flex-direction:column;gap:10px;max-height:86%;overflow:auto}
+.sheet h2{margin:0;font-size:15.5px;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.sheet h2 button{border:0;background:none;font-size:24px;cursor:pointer;color:var(--muted);line-height:1;padding:2px 6px}
+.cap{font-size:11.5px;color:var(--muted);letter-spacing:.05em;margin-top:4px}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.btn{height:38px;padding:0 13px;border:1px solid var(--line);background:var(--panel-2);border-radius:8px;cursor:pointer;font-size:13.5px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:500}
+.btn.warn{color:var(--danger);border-color:var(--danger)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{border:1px solid var(--line);background:var(--panel-2);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+.chips button:hover{border-color:var(--accent)}
+.err{color:var(--danger);font-size:12.5px;min-height:1em}
+textarea.code{width:100%;min-height:110px;resize:vertical;font-family:var(--f-mono);font-size:13px;line-height:1.45;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);word-break:break-all}
+.field{display:flex;gap:6px}
+.field input{flex:1;min-width:0;height:40px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:0 11px;font:inherit;font-size:15px}
+.ptab{overflow-x:auto;padding-bottom:2px}
+.ptab .g{display:grid;grid-template-columns:repeat(18,34px);gap:3px;width:max-content}
+.ptab button{height:34px;border-radius:6px;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;font-size:13px;padding:0}
+.ptab button:hover{border-color:var(--accent)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums;word-break:break-all}
+.kv dd sub{font-size:.8em}
+.tbl{border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.tbl td,.tbl th{padding:4px 12px 4px 0;text-align:left;border-bottom:1px solid var(--line)}
+.tbl th{font-weight:500;color:var(--muted)}
+.imgwrap{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px;display:grid;place-items:center}
+.imgwrap img{max-width:100%;max-height:44vh;display:block}
+.note{font-size:12.5px;color:var(--muted);line-height:1.5;margin:0}
+.list{display:flex;flex-direction:column;gap:2px}
+.list button{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;border:0;background:transparent;padding:11px 8px;border-radius:8px;cursor:pointer;font-size:14.5px}
+.list button:hover{background:var(--press)}
+.list button small{color:var(--muted);font-size:12px}
+.list button.warn{color:var(--danger)}
+.seg{display:flex}
+.seg .btn{border-radius:0;margin-left:-1px}
+.seg .btn:first-child{border-radius:8px 0 0 8px;margin-left:0}
+.seg .btn:last-child{border-radius:0 8px 8px 0}
+.seg .btn[aria-pressed="true"],.v3 .bar2>.btn[aria-pressed="true"]{background:var(--press);border-color:var(--icon);font-weight:500}
+.chips .mine{display:inline-flex;align-items:center;gap:2px;padding-right:6px}
+.chips .mine small{color:var(--muted);font-family:var(--f-mono);font-size:11px}
+.chips .mine .x{margin-left:4px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;color:var(--muted);font-size:15px}
+.chips .mine .x:hover{background:var(--press);color:var(--danger)}
+.chk{display:flex;gap:6px;align-items:center;font-size:13.5px}
+.help{margin:0;padding-left:18px;font-size:13.5px;line-height:1.6}
+
+/* 3D */
+.v3{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;color-scheme:dark;
+  --bar:#111315; --bg:#000000; --line:#2c3238; --panel-2:#1c2024; --press:#2a3036; --ink:#e6e8eb; --muted:#9aa2ab; --icon:#cdd2d8; --accent:#6ea2ff; --accent-ink:#0b1a33;
+  background:var(--bg);color:var(--ink)}
+.v3 .bar2{display:flex;gap:6px;align-items:center;padding:calc(8px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--line);background:var(--bar);flex-wrap:wrap}
+.v3 .bar2 .t{font-weight:600;font-size:15px;margin-right:auto}
+.v3 .wrap{position:relative;flex:1;min-height:0}
+#c3{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+.v3 .n3{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));font-size:11.5px;color:var(--muted);right:16px}
+
+@media (max-height:620px){ .rcol{top:68px;transform:none} .lcol{top:10px;transform:none} .lcol.collapsed{transform:translateX(calc(-100% - 1px))} .lcol .fl{max-height:calc(100vh - 140px)} }
+@media (max-width:520px){ .tr .tb{width:44px;height:44px} .rcol .tb,.lcol .tb{width:42px;height:42px} }
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+
+<div class="app">
+  <header class="bar">
+    <input class="ttl" id="docTitle" placeholder="제목 없음" aria-label="문서 제목" autocomplete="off" spellcheck="false" maxlength="80">
+    <button class="ib" id="undo" aria-label="실행 취소" title="실행 취소 (Ctrl+Z)"></button>
+    <button class="ib" id="redo" aria-label="다시 실행" title="다시 실행 (Ctrl+Shift+Z)"></button>
+    <span class="vsep"></span>
+    <button class="ib" id="fileBtn" aria-label="파일 메뉴" title="파일"></button>
+  </header>
+
+  <main class="stage" id="stage">
+    <svg id="svg" aria-label="구조식 캔버스"><g id="view"><g id="shp"></g><g id="mol"></g><g id="ovl"></g></g></svg>
+
+    <div class="tr">
+      <button class="tb fl" id="tplBtn" aria-label="구조 라이브러리" title="구조 라이브러리"></button>
+      <button class="tb fl" id="fitBtn" aria-label="화면에 맞추기" title="화면에 맞추기"></button>
+    </div>
+
+    <div class="lcol" id="lcol">
+      <div class="fl" id="elCol"></div>
+      <button class="tab" id="lTab" aria-label="원소 열 접기"><span>◂</span></button>
+    </div>
+
+    <div class="rcol" id="rcol"></div>
+
+    <div class="bp fl" id="bp">
+      <div class="vrow" id="vrow"></div>
+      <div class="trow" id="trow1"></div>
+      <div class="trow" id="trow2"></div>
+    </div>
+
+    <div class="toast" id="toast" hidden></div>
+  </main>
+</div>
+
+<div class="sheet-bg" id="sheetBg" hidden>
+  <div class="sheet" role="dialog" aria-labelledby="sheetTitle">
+    <h2><span id="sheetTitle"></span><button id="sheetClose" aria-label="닫기">×</button></h2>
+    <div id="sheetBody" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+</div>
+
+<div class="v3" id="v3" hidden>
+  <div class="bar2">
+    <span class="t">3D 보기</span>
+    <button class="btn" id="v3H" aria-pressed="true">수소 표시</button>
+    <button class="btn" id="v3Spin" aria-pressed="true">자동 회전</button>
+    <div class="seg" role="group" aria-label="모형"><button class="btn" id="v3bs">공-막대</button><button class="btn" id="v3line">선</button><button class="btn" id="v3sf">채움</button></div>
+    <button class="btn primary" id="v3Close">닫기</button>
+  </div>
+  <div class="wrap"><canvas id="c3"></canvas></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ===== 분자 모델 · SMILES · 배치 (DOM 없이 동작) ===== */
+const ORGANIC = new Set(['B','C','N','O','P','S','F','Cl','Br','I']);
+const VAL = {H:[1],B:[3],C:[4],N:[3,5],O:[2],F:[1],Si:[4],P:[3,5],S:[2,4,6],Cl:[1],Se:[2,4,6],Br:[1],I:[1]};
+const MASS = {H:[1.008,1.00782503],Li:[6.94,7.01600344],B:[10.81,11.0093054],C:[12.011,12],N:[14.007,14.00307401],
+  O:[15.999,15.99491462],F:[18.998,18.99840316],Na:[22.990,22.98976928],Mg:[24.305,23.9850417],Al:[26.982,26.98153853],
+  Si:[28.085,27.97692653],P:[30.974,30.97376199],S:[32.06,31.97207117],Cl:[35.45,34.96885268],K:[39.098,38.96370649],
+  Ca:[40.078,39.96259086],Fe:[55.845,55.93493633],Cu:[63.546,62.92959772],Zn:[65.38,63.92914201],Se:[78.971,79.9165218],
+  Br:[79.904,78.9183376],Sn:[118.71,119.9021966],I:[126.904,126.9044719]};
+
+function makeMol(){ return {atoms:[], bonds:[]}; }
+function adjOf(m){ const a = m.atoms.map(()=>[]); m.bonds.forEach((b,k)=>{ a[b.a].push(k); a[b.b].push(k); }); return a; }
+function other(b,i){ return b.a===i ? b.b : b.a; }
+function targetVal(el,base,c){ if(el==='C'||el==='Si'||el==='H') return base-Math.abs(c); if(el==='B') return base-c; return base+c; }
+function defaultH(m,i,adj){
+  const at=m.atoms[i], v=VAL[at.el]; if(!v) return 0;
+  let used=at.r||0; for(const k of adj[i]) used+=m.bonds[k].o;
+  for(const base of v){ const t=targetVal(at.el,base,at.c||0); if(t>=used) return t-used; }
+  return 0;
+}
+function hCount(m,i,adj){ const at=m.atoms[i]; return at.h!=null ? at.h : defaultH(m,i,adj); }
+
+function formula(m){
+  const adj=adjOf(m), cnt={}; let chg=0;
+  m.atoms.forEach((a,i)=>{ cnt[a.el]=(cnt[a.el]||0)+1; const h=hCount(m,i,adj); if(h) cnt.H=(cnt.H||0)+h; chg+=a.c||0; });
+  const els=Object.keys(cnt).sort();
+  let order;
+  if(cnt.C){ order=['C']; if(cnt.H) order.push('H'); order=order.concat(els.filter(e=>e!=='C'&&e!=='H')); } else order=els;
+  let mw=0, mono=0, unknown=false;
+  for(const e of order){ const ms=MASS[e]; if(!ms){ unknown=true; continue; } mw+=ms[0]*cnt[e]; mono+=ms[1]*cnt[e]; }
+  mono-=chg*0.00054858;
+  return {parts:order.map(e=>[e,cnt[e]]), chg, mw, mono, unknown};
+}
+
+/* ---------- SMILES 읽기 ---------- */
+function parseSmiles(str){
+  const s=(str||'').trim().split(/\s+/)[0];
+  if(!s) throw new Error('SMILES가 비어 있습니다.');
+  const m=makeMol(), arom=[], stack=[], rings=new Map();
+  let prev=null, bond=null, i=0;
+  const link=(a,b,bo)=>{
+    if(a===b) throw new Error('원자가 자기 자신과 결합할 수 없습니다.');
+    m.bonds.push({a,b,o: bo===null ? ((arom[a]&&arom[b])?'a':1) : bo});
+  };
+  const add=(el,ar,c,h)=>{
+    const k=m.atoms.length; m.atoms.push({x:0,y:0,el,c:c||0,h:h==null?null:h}); arom.push(ar);
+    if(prev!==null) link(prev,k,bond); bond=null; prev=k;
+  };
+  const BO={'-':1,'=':2,'#':3,'$':3,':':'a','/':1,'\\':1};
+  while(i<s.length){
+    const ch=s[i];
+    if(ch==='('){ if(prev===null) throw new Error((i+1)+'번째 괄호 앞에 원자가 없습니다.'); stack.push(prev); i++; continue; }
+    if(ch===')'){ if(!stack.length) throw new Error((i+1)+'번째 닫는 괄호에 짝이 없습니다.'); prev=stack.pop(); i++; continue; }
+    if(ch==='.'){ prev=null; bond=null; i++; continue; }
+    if(ch in BO){ bond=BO[ch]; i++; continue; }
+    if(ch==='['){
+      const j=s.indexOf(']',i); if(j<0) throw new Error('대괄호 [ 가 닫히지 않았습니다.');
+      const inner=s.slice(i+1,j);
+      const mm=inner.match(/^(\d*)(\*|[A-Z][a-z]?|se|as|[bcnops])(@{0,2}(?:TH|AL|SP|TB|OH)?\d*)(H\d*)?((?:\+\+?|--?)\d*)?(?::\d+)?$/);
+      if(!mm) throw new Error('대괄호 원자를 해석할 수 없습니다: ['+inner+']');
+      let sym=mm[2], ar=false;
+      if(sym[0]>='a'&&sym[0]<='z'){ ar=true; sym=sym[0].toUpperCase()+sym.slice(1); }
+      const h=mm[4] ? (mm[4].length>1 ? +mm[4].slice(1) : 1) : 0;
+      let c=0; if(mm[5]){ const sg=mm[5][0]==='+'?1:-1, rest=mm[5].replace(/[+-]/g,''); c = sg*(rest ? +rest : mm[5].length); }
+      add(sym,ar,c,h); i=j+1; continue;
+    }
+    if(s.startsWith('Cl',i)||s.startsWith('Br',i)){ add(s.substr(i,2),false); i+=2; continue; }
+    if('BCNOPSFI'.includes(ch)){ add(ch,false); i++; continue; }
+    if('bcnops'.includes(ch)){ add(ch.toUpperCase(),true); i++; continue; }
+    if(ch==='*'){ add('*',false); i++; continue; }
+    let num=null;
+    if(ch>='0'&&ch<='9'){ num=ch; i++; }
+    else if(ch==='%'){
+      if(s[i+1]==='('){ const j=s.indexOf(')',i); if(j<0) throw new Error('%( 고리 번호가 닫히지 않았습니다.'); num=s.slice(i+2,j); i=j+1; }
+      else { num=s.substr(i+1,2); if(!/^\d\d$/.test(num)) throw new Error('% 뒤에는 두 자리 숫자가 와야 합니다.'); i+=3; }
+      num=String(+num);
+    }
+    if(num!==null){
+      if(prev===null) throw new Error('고리 번호 '+num+' 앞에 원자가 없습니다.');
+      if(rings.has(num)){
+        const r=rings.get(num); rings.delete(num);
+        if(m.bonds.some(b=>(b.a===r.at&&b.b===prev)||(b.b===r.at&&b.a===prev))) throw new Error('고리 번호 '+num+'이(가) 이미 있는 결합을 다시 만듭니다.');
+        link(r.at,prev, bond!==null?bond:r.bo);
+      } else rings.set(num,{at:prev,bo:bond});
+      bond=null; continue;
+    }
+    throw new Error((i+1)+'번째 문자 \''+ch+'\'을(를) 해석할 수 없습니다.');
+  }
+  if(rings.size) throw new Error('닫히지 않은 고리 번호: '+[...rings.keys()].join(', '));
+  if(stack.length) throw new Error('여는 괄호가 닫히지 않았습니다.');
+  m.warn = kekulize(m,arom) ? '' : '방향족 고리의 케쿨레 구조를 찾지 못해 단일결합으로 표시했습니다.';
+  return m;
+}
+
+function kekulize(m,arom){
+  const ab=[]; m.bonds.forEach((b,k)=>{ if(b.o==='a') ab.push(k); });
+  if(!ab.length) return true;
+  const adj=adjOf(m), n=m.atoms.length;
+  const need=m.atoms.map((at,i)=>{
+    let used=0, na=0;
+    for(const k of adj[i]){ const o=m.bonds[k].o; if(o==='a'){ used++; na++; } else used+=o; }
+    if(!na) return false; const v=VAL[at.el]; if(!v) return false;
+    return targetVal(at.el,v[0],at.c||0)-used-(at.h||0) >= 1;
+  });
+  const nb=m.atoms.map(()=>[]);
+  for(const k of ab){ const b=m.bonds[k]; if(need[b.a]&&need[b.b]){ nb[b.a].push([b.b,k]); nb[b.b].push([b.a,k]); } }
+  const todo=[]; for(let i=0;i<n;i++) if(need[i]) todo.push(i);
+  const mate=new Int32Array(n).fill(-1), chosen=new Set(); let steps=0;
+  function solve(){
+    if(++steps>400000) return false;
+    let best=-1, bc=1e9;
+    for(const i of todo){ if(mate[i]!==-1) continue; let c=0; for(const [j] of nb[i]) if(mate[j]===-1) c++; if(c<bc){ bc=c; best=i; if(c<=1) break; } }
+    if(best===-1) return true; if(bc===0) return false;
+    for(const [j,k] of nb[best]){
+      if(mate[j]!==-1) continue;
+      mate[best]=j; mate[j]=best; chosen.add(k);
+      if(solve()) return true;
+      mate[best]=-1; mate[j]=-1; chosen.delete(k);
+    }
+    return false;
+  }
+  const ok=solve();
+  for(const k of ab) m.bonds[k].o = ok&&chosen.has(k) ? 2 : 1;
+  return ok;
+}
+
+/* ---------- SMILES 쓰기 ---------- */
+function toSmiles(m,first){
+  const n=m.atoms.length; if(!n) return '';
+  const adj=adjOf(m), seen=new Uint8Array(n), order=new Int32Array(n).fill(-1), parent=new Int32Array(n).fill(-1);
+  const atomStr=i=>{
+    const at=m.atoms[i], c=at.c||0;
+    if(at.el==='*'&&!c) return '*';
+    if(ORGANIC.has(at.el)&&!c&&!at.r&&(at.h==null||at.h===defaultH(m,i,adj))) return at.el;
+    const h=hCount(m,i,adj); let s='['+at.el;
+    if(h) s+='H'+(h>1?h:'');
+    if(c) s+=(c>0?'+':'-')+(Math.abs(c)>1?Math.abs(c):'');
+    return s+']';
+  };
+  const bs=o=>o===2?'=':o===3?'#':'';
+  const lab=x=>x<10?String(x):x<100?'%'+x:'%('+x+')';
+  const parts=[]; let cnt=0;
+  for(let s0=0;s0<n;s0++){
+    if(seen[s0]) continue;
+    // 성분 안에서 차수가 가장 낮은 원자에서 시작
+    const comp=[s0]; seen[s0]=1;
+    for(let q=0;q<comp.length;q++) for(const k of adj[comp[q]]){ const j=other(m.bonds[k],comp[q]); if(!seen[j]){ seen[j]=1; comp.push(j); } }
+    let start=comp[0]; for(const v of comp) if(adj[v].length<adj[start].length) start=v;
+    if(first!=null&&comp.includes(first)) start=first;
+    const stk=[start]; order[start]=cnt++;
+    const dfs=u=>{ for(const k of adj[u]){ const w=other(m.bonds[k],u); if(order[w]<0){ order[w]=cnt++; parent[w]=u; dfs(w); } } };
+    dfs(start);
+    const opens=new Map(), closes=new Map();
+    for(const v of comp) for(const k of adj[v]){
+      const b=m.bonds[k]; if(b.a!==v) continue;
+      if(parent[b.a]===b.b||parent[b.b]===b.a) continue;
+      const [x,y]=order[b.a]<order[b.b]?[b.a,b.b]:[b.b,b.a];
+      if(!opens.has(x)) opens.set(x,[]); if(!closes.has(y)) closes.set(y,[]);
+      opens.get(x).push(k); closes.get(y).push(k);
+    }
+    const free=[]; let top=0; const label=new Map();
+    const take=()=>{ if(free.length){ free.sort((a,b)=>a-b); return free.shift(); } return ++top; };
+    const w=u=>{
+      let s=atomStr(u);
+      for(const k of closes.get(u)||[]){ const l=label.get(k); label.delete(k); s+=lab(l); free.push(l); }
+      const op=(opens.get(u)||[]).slice().sort((a,b)=>order[other(m.bonds[a],u)]-order[other(m.bonds[b],u)]);
+      for(const k of op){ const l=take(); label.set(k,l); s+=bs(m.bonds[k].o)+lab(l); }
+      const kids=adj[u].map(k=>[k,other(m.bonds[k],u)]).filter(([k,v])=>parent[v]===u).sort((a,b)=>order[a[1]]-order[b[1]]);
+      kids.forEach(([k,v],idx)=>{ const p=bs(m.bonds[k].o)+w(v); s+= idx===kids.length-1 ? p : '('+p+')'; });
+      return s;
+    };
+    parts.push(w(start));
+  }
+  return parts.join('.');
+}
+
+/* ---------- 거리 기반 배치 (stress majorization) ---------- */
+function components(n,nb){
+  const id=new Int32Array(n).fill(-1), list=[];
+  for(let s=0;s<n;s++){ if(id[s]>=0) continue; const c=[s]; id[s]=list.length;
+    for(let q=0;q<c.length;q++) for(const j of nb[c[q]]) if(id[j]<0){ id[j]=list.length; c.push(j); }
+    list.push(c); }
+  return list;
+}
+function hops(n,nb){
+  const H=new Int32Array(n*n).fill(-1), q=new Int32Array(n);
+  for(let s=0;s<n;s++){ let h=0,t=0; q[t++]=s; H[s*n+s]=0;
+    while(h<t){ const u=q[h++], d=H[s*n+u]; for(const v of nb[u]) if(H[s*n+v]<0){ H[s*n+v]=d+1; q[t++]=v; } } }
+  return H;
+}
+function rand(seed){ let x=seed>>>0||1; return ()=>{ x^=x<<13; x^=x>>>17; x^=x<<5; return ((x>>>0)/4294967296); }; }
+
+// T: 목표 거리 행렬, W: 가중치(0이면 무시). local: 이웃 근처만 + 겹침 방지
+function stress(n,T,D,X,iters,rmin){
+  const acc=new Float64Array(D);
+  for(let it=0;it<iters;it++){
+    for(let i=0;i<n;i++){
+      let sw=0; acc.fill(0);
+      for(let j=0;j<n;j++){ if(j===i) continue;
+        let t=T[i*n+j]; let dd=0;
+        for(let d=0;d<D;d++){ const v=X[i*D+d]-X[j*D+d]; dd+=v*v; }
+        let dist=Math.sqrt(dd)||1e-6;
+        if(t<0){ if(!rmin||dist>=rmin) continue; t=rmin; }
+        const w=1/(t*t);
+        for(let d=0;d<D;d++) acc[d]+=w*(X[j*D+d]+t*(X[i*D+d]-X[j*D+d])/dist);
+        sw+=w;
+      }
+      if(sw>0) for(let d=0;d<D;d++) X[i*D+d]=acc[d]/sw;
+    }
+  }
+}
+function mdsInit(n,T,D,seed){
+  const X=new Float64Array(n*D); if(n<2) return X;
+  const B=new Float64Array(n*n), rm=new Float64Array(n); let all=0;
+  for(let i=0;i<n;i++) for(let j=0;j<n;j++){ const t=T[i*n+j]; const v=t*t; B[i*n+j]=v; rm[i]+=v/n; all+=v/(n*n); }
+  for(let i=0;i<n;i++) for(let j=0;j<n;j++) B[i*n+j]=-0.5*(B[i*n+j]-rm[i]-rm[j]+all);
+  const r=rand(seed), vecs=[];
+  for(let d=0;d<D;d++){
+    let v=new Float64Array(n); for(let i=0;i<n;i++) v[i]=r()-0.5; let lam=0;
+    for(let it=0;it<120;it++){
+      const w=new Float64Array(n);
+      for(let i=0;i<n;i++){ let s=0; const o=i*n; for(let j=0;j<n;j++) s+=B[o+j]*v[j]; w[i]=s; }
+      for(const u of vecs){ let p=0; for(let i=0;i<n;i++) p+=w[i]*u.v[i]; for(let i=0;i<n;i++) w[i]-=p*u.v[i]; }
+      let nn=0; for(let i=0;i<n;i++) nn+=w[i]*w[i]; nn=Math.sqrt(nn)||1; lam=0;
+      for(let i=0;i<n;i++){ lam+=v[i]*w[i]; v[i]=w[i]/nn; }
+    }
+    vecs.push({v,lam});
+    const sc=Math.sqrt(Math.max(lam,1e-6));
+    for(let i=0;i<n;i++) X[i*D+d]=v[i]*sc+(r()-0.5)*0.05;
+  }
+  return X;
+}
+
+// 2D 배치: 고리가 많은 우리(cage)형 성분은 3D로 배치해 투영
+function layout2D(m){
+  const n=m.atoms.length; if(!n) return;
+  const adj=adjOf(m), nb=m.atoms.map((_,i)=>adj[i].map(k=>other(m.bonds[k],i)));
+  const comps=components(n,nb); let xoff=0; const placed=[];
+  for(const c of comps){
+    const cn=c.length, loc=new Map(c.map((v,i)=>[v,i]));
+    const lnb=c.map(v=>nb[v].map(w=>loc.get(w)));
+    let E=0; for(const v of c) E+=nb[v].length; E/=2;
+    const cage = cn>=12 && (E-cn+1) > cn/4;
+    let P;
+    if(cage){
+      const X=embed3DGraph(cn,lnb,c.map(v=>m.atoms[v].el),null);
+      P=new Float64Array(cn*2); for(let i=0;i<cn;i++){ P[i*2]=X[i*3]; P[i*2+1]=X[i*3+1]; }
+      // 결합 평균 길이를 1로
+      let s=0,k=0; for(let i=0;i<cn;i++) for(const j of lnb[i]) if(j>i){ s+=Math.hypot(X[i*3]-X[j*3],X[i*3+1]-X[j*3+1],X[i*3+2]-X[j*3+2]); k++; }
+      const f=k?k/s:1; for(let i=0;i<P.length;i++) P[i]*=f;
+    } else {
+      const H=hops(cn,lnb), T=new Float64Array(cn*cn);
+      for(let i=0;i<cn*cn;i++){ const h=H[i]; T[i]= h<=0?0 : h===1?1 : h===2?1.732 : h*0.87; }
+      P=mdsInit(cn,T,2,7+cn);
+      stress(cn,T,2,P, cn<60?260:cn<200?150:80, 0);
+      let s=0,k=0; for(let i=0;i<cn;i++) for(const j of lnb[i]) if(j>i){ s+=Math.hypot(P[i*2]-P[j*2],P[i*2+1]-P[j*2+1]); k++; }
+      const f=k?k/s:1; for(let i=0;i<P.length;i++) P[i]*=f;
+    }
+    let minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
+    for(let i=0;i<cn;i++){ minx=Math.min(minx,P[i*2]); maxx=Math.max(maxx,P[i*2]); miny=Math.min(miny,P[i*2+1]); maxy=Math.max(maxy,P[i*2+1]); }
+    const cy=(miny+maxy)/2;
+    c.forEach((v,i)=>{ m.atoms[v].x=P[i*2]-minx+xoff; m.atoms[v].y=P[i*2+1]-cy; });
+    xoff+=(maxx-minx)+1.6;
+  }
+}
+
+// 3D: 결합 길이·결합각을 반영한 목표 거리로 배치
+// 공유 결합 반지름(Å) 합으로 결합 길이 근사, 다중결합은 줄임
+const RCOV={H:.31,B:.84,C:.76,N:.71,O:.66,F:.57,Si:1.11,P:1.07,S:1.05,Cl:1.02,Ge:1.2,As:1.19,Se:1.2,Br:1.2,Sn:1.39,Sb:1.39,Te:1.38,I:1.39,Xe:1.4,Li:1.28,Na:1.66,K:2.03,Mg:1.41,Al:1.21,Fe:1.32,Cu:1.32,Zn:1.22};
+function bondLen(o,ea,eb){ const s=(RCOV[ea]||1.2)+(RCOV[eb]||1.2); if(ea==='H'||eb==='H') return s+.02; return o>=3?s*.79:o===2?s*.88:s; }
+// 점 묶음을 가장 잘 맞는 평면에 투영
+function projectPlane(X,g){
+  const k=g.length; if(k<4) return; let cx=0,cy=0,cz=0;
+  for(const a of g){ cx+=X[a*3]; cy+=X[a*3+1]; cz+=X[a*3+2]; } cx/=k; cy/=k; cz/=k;
+  let xx=0,xy=0,xz=0,yy=0,yz=0,zz=0;
+  for(const a of g){ const x=X[a*3]-cx, y=X[a*3+1]-cy, z=X[a*3+2]-cz; xx+=x*x; xy+=x*y; xz+=x*z; yy+=y*y; yz+=y*z; zz+=z*z; }
+  const t=xx+yy+zz; let v=[.577,.577,.577];
+  for(let it=0;it<40;it++){ const w=[(t-xx)*v[0]-xy*v[1]-xz*v[2], -xy*v[0]+(t-yy)*v[1]-yz*v[2], -xz*v[0]-yz*v[1]+(t-zz)*v[2]]; const l=Math.hypot(w[0],w[1],w[2])||1; v=[w[0]/l,w[1]/l,w[2]/l]; }
+  for(const a of g){ const d=(X[a*3]-cx)*v[0]+(X[a*3+1]-cy)*v[1]+(X[a*3+2]-cz)*v[2]; X[a*3]-=d*v[0]; X[a*3+1]-=d*v[1]; X[a*3+2]-=d*v[2]; }
+}
+function embed3DGraph(n,nb,els,orders){
+  // orders: Map "i,j" -> 결합 차수 (없으면 1.42 평균)
+  const H=hops(n,nb), T=new Float64Array(n*n);
+  const ord=(i,j)=>orders? (orders.get(i<j?i+','+j:j+','+i)||1) : 0;
+  // 콘쥬게이션 고리(방향족 포함) 찾기: 고리 원자가 모두 이중결합을 갖거나 비공유 전자쌍 주개(N·O·S 등)
+  const hasDbl=new Uint8Array(n); if(orders) for(let i=0;i<n;i++) for(const j of nb[i]) if(ord(i,j)===2) hasDbl[i]=1;
+  const conjRings=[], inConj=new Uint8Array(n), ringOf=new Map();
+  if(orders){
+    const seen=new Set();
+    for(let i=0;i<n;i++) for(const j of nb[i]){ if(j<i||els[i]==='H'||els[j]==='H') continue;
+      const prev=new Map([[i,-1]]), dep=new Map([[i,0]]), q=[i]; let found=false;
+      for(let hh=0;hh<q.length&&!found;hh++){ const u=q[hh]; if(dep.get(u)>=7) continue;
+        for(const v of nb[u]){ if(u===i&&v===j) continue; if(prev.has(v)) continue; prev.set(v,u); dep.set(v,dep.get(u)+1); if(v===j){ found=true; break; } q.push(v); } }
+      if(!found) continue; const ring=[]; let x=j; while(x!==-1){ ring.push(x); x=prev.get(x); }
+      const key=ring.slice().sort((a,b)=>a-b).join(','); if(seen.has(key)) continue; seen.add(key);
+      const donor=a=>/^(N|O|S|Se|P)$/.test(els[a])&&nb[a].length<=3;
+      let nd=0; const ok=ring.every(a=>{ if(hasDbl[a]) return true; if(donor(a)){ nd++; return true; } return false; });
+      if(ok&&nd<=1){ conjRings.push(ring); for(const a of ring){ inConj[a]=1; if(!ringOf.has(a)) ringOf.set(a,new Set()); ringOf.get(a).add(conjRings.length-1); } }
+    }
+  }
+  const sameConj=(i,j)=>{ const A=ringOf.get(i), B=ringOf.get(j); if(!A||!B) return false; for(const r of A) if(B.has(r)) return true; return false; };
+  const bl=(i,j)=>{ if(!orders) return 1.42; const o=ord(i,j); if(o<=2&&sameConj(i,j)) return (bondLen(1,els[i],els[j])+bondLen(2,els[i],els[j]))/2; return bondLen(o,els[i],els[j]); };
+  const ang=c=>{ if(!orders) return 120; let dbl=0,tri=0; for(const j of nb[c]){ const o=ord(c,j); if(o===2) dbl++; if(o===3) tri++; }
+    if(tri||dbl>1) return 180; if(dbl||inConj[c]) return 120; if(els[c]==='C'||els[c]==='N'||els[c]==='Si'||els[c]==='P') return 109.5; return 108; };
+  // 평면이어야 하는 원자 묶음: 콘쥬게이션 고리 + 이웃, 이중결합 양끝 + 이웃
+  const planeGroups=[];
+  if(orders){
+    for(const r of conjRings){ const g=new Set(r); for(const a of r) for(const b of nb[a]) g.add(b); planeGroups.push([...g]); }
+    for(let i=0;i<n;i++) for(const j of nb[i]){ if(j<i||ord(i,j)!==2||sameConj(i,j)) continue; const g=new Set([i,j]); for(const b of nb[i]) g.add(b); for(const b of nb[j]) g.add(b); if(g.size>=4) planeGroups.push([...g]); }
+    for(let i=0;i<n;i++){ if(!inConj[i]||nb[i].length!==3) continue; planeGroups.push([i,...nb[i]]); }
+  }
+  for(let i=0;i<n;i++) for(let j=0;j<n;j++){
+    const h=H[i*n+j];
+    if(h<=0){ T[i*n+j]=h===0?0:-1; continue; }
+    if(h===1){ T[i*n+j]=bl(i,j); continue; }
+    if(h===2){ let c=-1; for(const k of nb[i]) if(nb[k].includes(j)){ c=k; break; }
+      const a=bl(i,c), b=bl(c,j), th=ang(c)*Math.PI/180; T[i*n+j]=Math.sqrt(a*a+b*b-2*a*b*Math.cos(th)); continue; }
+    T[i*n+j]= h===3 ? 2.9 : h*1.24;
+  }
+  const comps=components(n,nb), X=new Float64Array(n*3);
+  let off=0;
+  for(const c of comps){
+    const cn=c.length, Tc=new Float64Array(cn*cn);
+    for(let a=0;a<cn;a++) for(let b=0;b<cn;b++) Tc[a*cn+b]=T[c[a]*n+c[b]];
+    const Tfull=Tc.map(v=>v<0?0:v);
+    const Xc=mdsInit(cn,Tfull,3,11+cn);
+    stress(cn,Tfull,3,Xc, cn<80?120:50, 0);
+    const Tl=Tc.map(v=>v>4.2?-1:v);
+    stress(cn,Tl,3,Xc, cn<80?500:90, 2.6);
+    // 평면성: 우리(cage)형이 아니면 평면 묶음을 반복해서 평면에 투영
+    let heavy=0, ec=0; const inC=new Map(c.map((v,a)=>[v,a]));
+    for(const v of c){ if(els[v]!=='H') heavy++; for(const w of nb[v]) if(w>v&&els[v]!=='H'&&els[w]!=='H') ec++; }
+    const cage=heavy>=12&&(ec-heavy+1)>heavy/4;
+    const groups=cage?[]:planeGroups.filter(g=>inC.has(g[0])).map(g=>g.map(v=>inC.get(v)));
+    if(groups.length){ const rounds=cn<150?40:15;
+      for(let r=0;r<rounds;r++){ for(const g of groups) projectPlane(Xc,g); stress(cn,Tl,3,Xc,cn<150?3:1,2.6); }
+      for(let r=0;r<3;r++) for(const g of groups) projectPlane(Xc,g); }
+    // 평균 결합 길이를 목표값에 맞춰 크기 보정
+    { let st=0, sa=0; for(let a=0;a<cn;a++) for(let b=a+1;b<cn;b++){ if(H[c[a]*n+c[b]]!==1) continue; st+=Tc[a*cn+b]; sa+=Math.hypot(Xc[a*3]-Xc[b*3],Xc[a*3+1]-Xc[b*3+1],Xc[a*3+2]-Xc[b*3+2]); }
+      if(sa>0){ const f=st/sa; for(let a=0;a<cn*3;a++) Xc[a]*=f; } }
+    let cx=0,cy=0,cz=0; for(let a=0;a<cn;a++){ cx+=Xc[a*3]; cy+=Xc[a*3+1]; cz+=Xc[a*3+2]; } cx/=cn; cy/=cn; cz/=cn;
+    let rad=0; for(let a=0;a<cn;a++) rad=Math.max(rad,Math.hypot(Xc[a*3]-cx,Xc[a*3+1]-cy,Xc[a*3+2]-cz));
+    c.forEach((v,a)=>{ X[v*3]=Xc[a*3]-cx+off+rad; X[v*3+1]=Xc[a*3+1]-cy; X[v*3+2]=Xc[a*3+2]-cz; });
+    off+=2*rad+3;
+  }
+  // 전체 중심을 원점으로
+  let cx=0; for(let i=0;i<n;i++) cx+=X[i*3]; cx/=n; for(let i=0;i<n;i++) X[i*3]-=cx;
+  return X;
+}
+
+// 그림의 분자 → 3D 좌표 (원하면 수소 포함)
+function embed3D(m,withH){
+  const adj=adjOf(m), els=m.atoms.map(a=>a.el), nb=m.atoms.map((_,i)=>adj[i].map(k=>other(m.bonds[k],i)));
+  const orders=new Map(), bonds=m.bonds.map(b=>({a:b.a,b:b.b,o:b.o}));
+  m.bonds.forEach(b=>orders.set(b.a<b.b?b.a+','+b.b:b.b+','+b.a,b.o));
+  if(withH){
+    const n0=m.atoms.length;
+    for(let i=0;i<n0;i++){ const h=hCount(m,i,adj); for(let k=0;k<h;k++){ const j=els.length; els.push('H'); nb.push([i]); nb[i].push(j); orders.set(i+','+j,1); bonds.push({a:i,b:j,o:1}); } }
+  }
+  const X=embed3DGraph(els.length,nb,els,orders);
+  return {X,els,bonds};
+}
+
+if(typeof module!=='undefined') module.exports={parseSmiles,toSmiles,formula,layout2D,embed3D,adjOf,hCount,makeMol};
+
+</script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const svg=$('svg'), viewG=$('view'), shpG=$('shp'), molG=$('mol'), ovl=$('ovl');
+const L=1, MERGE=0.3, D2R=Math.PI/180;
+let M={atoms:[],bonds:[],shapes:[]};
+let view={s:42,tx:0,ty:0};
+let tool='bond', strip='bond';
+const V={bond:'single',multi:'double',ring:'6a',arrow:'fwd',shape:'rect',bracket:'sq',charge:'+',color:'c-red',select:'rect',atom:'C',group:'Ph',rotate:'ccw15',flip:'h'};
+let sel={atoms:new Set(),shapes:new Set()};
+const undoS=[], redoS=[];
+let hover=null, drag=null, topo=0, customEl=null;
+
+/* ---------- 아이콘 ---------- */
+const ic=(d,cls)=>`<svg class="i${cls?' '+cls:''}" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+const hashIcon=(()=>{ let s=''; for(let k=0;k<6;k++){ const t=k/5, px=5+14*t, py=19-14*t, w=.4+t*2.6, n=.7071; s+=`<path d="M${(px-n*w).toFixed(2)} ${(py-n*w).toFixed(2)}L${(px+n*w).toFixed(2)} ${(py+n*w).toFixed(2)}"/>`; } return s; })();
+const polyIcon=(n,arom)=>{ const R=8.3, P=[]; for(let k=0;k<n;k++){ const t=-Math.PI/2+(n%2?0:Math.PI/n)+k*2*Math.PI/n; P.push([12+R*Math.cos(t),12+R*Math.sin(t)]); }
+  let s=`<polygon points="${P.map(p=>p.map(v=>v.toFixed(1)).join(',')).join(' ')}"/>`;
+  if(arom) for(let k=0;k<(n%2?n-1:n);k+=2){ const a=P[k], b=P[(k+1)%n], f=.7; s+=`<path d="M${(12+(a[0]-12)*f).toFixed(1)} ${(12+(a[1]-12)*f).toFixed(1)}L${(12+(b[0]-12)*f).toFixed(1)} ${(12+(b[1]-12)*f).toFixed(1)}"/>`; }
+  return s; };
+const I={
+  single:'<path d="M5 19L19 5"/>', w:'<path d="M5 19L18 4.3 19.7 6z" fill="currentColor"/>', h:hashIcon,
+  y:'<path d="M4 20c2-1 2-3.5 4-4s2.5 1.5 4 0-1-3.5 1-4.5 3 1 4-.5-1-3.5 1-4.5 2 0 2 0"/>',
+  b:'<path d="M5 19L19 5" stroke-width="4"/>', d:'<path d="M5 19L19 5" stroke-dasharray="1.6 2.6"/>',
+  double:'<path d="M4 17L17 4M7 20L20 7"/>', triple:'<path d="M3 15L15 3M5.6 18.4L18.4 5.6M9 21L21 9"/>',
+  text:'<path d="M6 20L12 4l6 16M8.2 14.5h7.6"/>',
+  fwd:'<path d="M3 12h16"/><path d="M15 8l4 4-4 4"/>', eq:'<path d="M3 9.5h17l-4-3.5"/><path d="M21 14.5H4l4 3.5"/>',
+  res:'<path d="M3.5 12h17M7.5 8l-4 4 4 4M16.5 8l4 4-4 4"/>', retro:'<path d="M3 9.5h13M3 14.5h13M14 6l6 6-6 6"/>',
+  rect:'<rect x="4" y="6.5" width="16" height="11"/>', round:'<rect x="4" y="6.5" width="16" height="11" rx="3.5"/>', ellipse:'<ellipse cx="12" cy="12" rx="8.5" ry="6.5"/>',
+  sq:'<path d="M8.5 4H5v16h3.5M15.5 4H19v16h-3.5"/>', paren:'<path d="M8 4C4 8 4 16 8 20M16 4c4 4 4 12 0 16"/>',
+  curly:'<path d="M8.5 4C6 4 6.5 6 6.5 8.5S6 12 4.5 12c1.5 0 2 1 2 3.5S6 20 8.5 20M15.5 4c2.5 0 2 2 2 4.5s.5 3.5 2 3.5c-1.5 0-2 1-2 3.5s.5 4.5-2 4.5"/>',
+  plus:'<circle cx="12" cy="12" r="8"/><path d="M12 8.5v7M8.5 12h7"/>', minus:'<circle cx="12" cy="12" r="8"/><path d="M8.5 12h7"/>',
+  rad:'<circle cx="12" cy="12" r="8" stroke-dasharray="2 2"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/>', zero:'<circle cx="12" cy="12" r="8"/><path d="M7 17L17 7"/>',
+  align:'<path d="M5 4v16"/><rect x="8" y="6.5" width="7" height="4"/><rect x="8" y="13.5" width="11" height="4"/>',
+  fh:'<path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L4 12l5 5z"/><path d="M15 7l5 5-5 5z" fill="currentColor"/>',
+  fv:'<path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-5 5 5z"/><path d="M7 15l5 5 5-5z" fill="currentColor"/>',
+  rotate:'<path d="M19 12a7 7 0 11-2.05-4.95"/><path d="M17.5 3v4.2h-4.2"/>',
+  ccw:'<path d="M5 12a7 7 0 102.05-4.95"/><path d="M6.5 3v4.2h4.2"/>', cw:'<path d="M19 12a7 7 0 11-2.05-4.95"/><path d="M17.5 3v4.2h-4.2"/>',
+  info:'<path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z"/><path d="M12 11v5.5"/><circle cx="12" cy="8" r=".7" fill="currentColor"/>',
+  more:'<circle cx="12" cy="12" r="9"/><circle cx="8" cy="12" r=".9" fill="currentColor"/><circle cx="12" cy="12" r=".9" fill="currentColor"/><circle cx="16" cy="12" r=".9" fill="currentColor"/>',
+  hand:'<path d="M8 13V6.5a1.5 1.5 0 013 0V11"/><path d="M11 10.5V5a1.5 1.5 0 013 0v5.5"/><path d="M14 10.5V6.5a1.5 1.5 0 013 0V14c0 4-2.5 7-6 7-2.6 0-4.1-1.3-5.6-3.6L4 14.6a1.4 1.4 0 012.2-1.7L8 15"/>',
+  select:'<rect x="4" y="4" width="16" height="16" stroke-dasharray="2.5 2.2"/>',
+  lasso:'<path d="M12 4c5 0 8.5 2.5 8.5 6s-3.5 6-8.5 6-8.5-2.5-8.5-6S7 4 12 4z" stroke-dasharray="2.5 2.2"/><path d="M8 15.5c-1 2-.5 3.5 1.5 4.5"/>',
+  erase:'<path d="M14.5 4.5l5 5-9 9H6l-2.5-2.5z"/><path d="M9 10l5 5"/><path d="M11 18.5h9"/>',
+  copy:'<rect x="8" y="8" width="12" height="12" rx="1.5"/><path d="M5 15.5V5.5A1.5 1.5 0 016.5 4H16"/>',
+  saveGrp:'<path d="M3 17l4.5-3 4.5 2.5"/><path d="M7.5 14V8.5"/><circle cx="7.5" cy="6.5" r="1.8"/><path d="M17.5 9v8M13.5 13h8"/>',
+  group:'<path d="M4 17l5-3 5.5 2.5L20 12"/><path d="M9 14V8.5"/><text x="9" y="7" font-size="6.5" text-anchor="middle" stroke="none" fill="currentColor" font-family="sans-serif">R</text>',
+  camera:'<path d="M3 8V4h4M17 4h4v4M21 16v4h-4M7 20H3v-4"/><path d="M12 7.3l4.2 2.4v4.6L12 16.7l-4.2-2.4V9.7z"/>',
+  book:'<path d="M3 5.5c3-1.3 6-1.3 8.5 0v14c-2.5-1.3-5.5-1.3-8.5 0z"/><path d="M11.5 5.5c2.5-1.3 5.5-1.3 8.5 0V11"/><circle cx="17" cy="16" r="3"/><path d="M19.2 18.2l2.3 2.3"/>',
+  fit:'<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><rect x="9" y="9" width="6" height="6" rx="1"/>',
+  undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/>', redo:'<path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 000 11H13"/>',
+  dots:'<circle cx="5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="19" cy="12" r="1.4" fill="currentColor"/>',
+  clean:'<path d="M4 20l7-7"/><path d="M13 4l1.2 2.8L17 8l-2.8 1.2L13 12l-1.2-2.8L9 8l2.8-1.2z"/><path d="M18.5 13l.7 1.5 1.5.7-1.5.7-.7 1.5-.7-1.5-1.5-.7 1.5-.7z"/>',
+  all:'<rect x="4" y="4" width="16" height="16" stroke-dasharray="2.5 2.2"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+  smiles:'<path d="M8 6L3 12l5 6M16 6l5 6-5 6M14 4l-4 16"/>',
+  color:'<circle cx="12" cy="12" r="7.5" stroke="var(--c-red)" stroke-width="3" stroke-dasharray="7.85 31.4"/><circle cx="12" cy="12" r="7.5" stroke="var(--c-orange)" stroke-width="3" stroke-dasharray="0 7.85 7.85 31.4"/><circle cx="12" cy="12" r="7.5" stroke="var(--c-green)" stroke-width="3" stroke-dasharray="0 15.7 7.85 31.4"/><circle cx="12" cy="12" r="7.5" stroke="var(--c-blue)" stroke-width="3" stroke-dasharray="0 23.55 7.85 31.4"/>'
+};
+for(const n of [3,4,5,6,7,8]) I['r'+n]=polyIcon(n,false);
+I.r6a=polyIcon(6,true); I.r5a=polyIcon(5,true);
+
+/* ---------- 데이터 ---------- */
+const ELEMENTS='H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn Fr Ra Ac Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No Lr Rf Db Sg Bh Hs Mt Ds Rg Cn Nh Fl Mc Lv Ts Og'.split(' ');
+const ELSET=new Set(ELEMENTS);
+const PT=[['H',1,1],['He',1,18],['Li',2,1],['Be',2,2],['B',2,13],['C',2,14],['N',2,15],['O',2,16],['F',2,17],['Ne',2,18],
+ ['Na',3,1],['Mg',3,2],['Al',3,13],['Si',3,14],['P',3,15],['S',3,16],['Cl',3,17],['Ar',3,18]];
+'K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr'.split(' ').forEach((e,i)=>PT.push([e,4,i+1]));
+'Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe'.split(' ').forEach((e,i)=>PT.push([e,5,i+1]));
+'Cs Ba La Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn'.split(' ').forEach((e,i)=>PT.push([e,6,i+1]));
+'Fr Ra Ac Rf Db Sg Bh Hs Mt Ds Rg Cn Nh Fl Mc Lv Ts Og'.split(' ').forEach((e,i)=>PT.push([e,7,i+1]));
+const GROUPS={Me:'C',Et:'CC',nPr:'CCC',iPr:'C(C)C',tBu:'C(C)(C)C',Ph:'c1ccccc1',Bn:'Cc1ccccc1',OH:'O',OMe:'OC',OEt:'OCC',OPh:'Oc1ccccc1',
+  NH2:'N',NHMe:'NC',NMe2:'N(C)C',NO2:'[N+](=O)[O-]',CN:'C#N',CHO:'C=O',COOH:'C(=O)O',CO2Me:'C(=O)OC',CO2Et:'C(=O)OCC',Ac:'C(=O)C',OAc:'OC(C)=O',
+  CONH2:'C(N)=O',CF3:'C(F)(F)F',SH:'S',SMe:'SC',SO3H:'S(=O)(=O)O',Ts:'S(=O)(=O)c1ccc(C)cc1',Boc:'C(=O)OC(C)(C)C',TMS:'[Si](C)(C)C',
+  Vinyl:'C=C',Ethynyl:'C#C',F:'F',Cl:'Cl',Br:'Br',I:'I'};
+let CUSTOM=[]; try{ CUSTOM=JSON.parse(localStorage.getItem('moldraw.groups')||'[]')||[]; }catch(e){}
+try{ V.abbr=localStorage.getItem('moldraw.abbr')==='1'; }catch(e){}
+function saveGroups(){ try{ localStorage.setItem('moldraw.groups',JSON.stringify(CUSTOM)); localStorage.setItem('moldraw.abbr',V.abbr?'1':'0'); }catch(e){} }
+const customOf=n=>CUSTOM.find(g=>g.n===n);
+const groupSmiles=n=>{ const c=customOf(n); return c?c.s:GROUPS[n]; };
+const asAbbr=n=>!(ELSET.has(n)&&groupSmiles(n)===n);
+const abElCache={};
+function abFirstEl(n){ if(n in abElCache) return abElCache[n]; let e='C'; try{ e=parseSmiles(groupSmiles(n)).atoms[0].el; }catch(x){} return abElCache[n]=e; }
+const REV={OMe:'MeO',OEt:'EtO',OPh:'PhO',OH:'HO',SH:'HS',SMe:'MeS',NH2:'H2N',NHMe:'MeHN',NMe2:'Me2N',NO2:'O2N',CN:'NC',CHO:'OHC',COOH:'HOOC',CO2Me:'MeO2C',CO2Et:'EtO2C',OAc:'AcO',CONH2:'H2NOC',CF3:'F3C',SO3H:'HO3S',Ac:'Ac'};
+function abBody(t){ let s='', sub=false; for(const m of t.match(/\d+|\D+/g)||[]){ const d=/^\d/.test(m); s+=`<tspan dy="${d&&!sub?12:!d&&sub?-12:0}"${d?' style="font-size:32px"':''}>${esc(m)}</tspan>`; sub=d; } return s; }
+// 글자 폭 측정 (모델 단위). 화면 글꼴로 실제 측정하고, 글꼴이 바뀌면 다시 잰다
+const MEAS={}; let measEl=null;
+function tW(str,size){ size=size||46; const key=size+'|'+str; if(key in MEAS) return MEAS[key];
+  let w=0; try{ if(!measEl){ measEl=document.createElementNS('http://www.w3.org/2000/svg','text'); measEl.setAttribute('x','-9999'); measEl.setAttribute('y','-9999'); measEl.setAttribute('aria-hidden','true'); measEl.style.fontFamily=SCREEN_FONT; measEl.style.fontWeight='500'; svg.appendChild(measEl); }
+    measEl.style.fontSize=size+'px'; measEl.textContent=str; w=measEl.getComputedTextLength(); }catch(e){}
+  if(!w) w=str.length*size*.62; return MEAS[key]=w/100; }
+try{ document.fonts&&document.fonts.ready.then(()=>{ for(const k in MEAS) delete MEAS[k]; render(); }); }catch(e){}
+function abW(t){ let w=0; for(const m of t.match(/\d+|\D+/g)||[]) w+= /^\d/.test(m)?tW(m,32):tW(m); return w; }
+// 기호로 표시된 작용기를 실제 원자로 펼친 분자 (분자식·SMILES·3D용)
+function expandMol(src){
+  const m={atoms:src.atoms.map(a=>Object.assign({},a)),bonds:src.bonds.map(b=>Object.assign({},b))}, n0=m.atoms.length;
+  for(let i=0;i<n0;i++){ const a=m.atoms[i]; if(!a.ab) continue; const sm=groupSmiles(a.ab); let g=null; try{ g=sm&&parseSmiles(sm); }catch(e){}
+    if(!g||!g.atoms.length){ a.el='C'; delete a.ab; a.h=null; continue; }
+    const map=[];
+    g.atoms.forEach((ga,k)=>{ if(k===0){ a.el=ga.el; a.c=ga.c||0; a.h=ga.h; delete a.ab; map[0]=i; } else { map[k]=m.atoms.length; m.atoms.push({x:a.x,y:a.y,el:ga.el,c:ga.c||0,h:ga.h}); } });
+    g.bonds.forEach(b=>m.bonds.push({a:map[b.a],b:map[b.b],o:b.o})); }
+  return m;
+}
+const GROUP_QUICK=['Me','Et','Ph','OH','OMe','NH2','NO2','COOH','CHO','CN','CF3','Ac','tBu'];
+const TEMPLATES=[
+ ['고리',[['벤젠','c1ccccc1'],['사이클로헥세인','C1CCCCC1'],['사이클로펜테인','C1CCCC1'],['나프탈렌','c1ccc2ccccc2c1'],['안트라센','c1ccc2cc3ccccc3cc2c1'],['피리딘','c1ccncc1'],['피롤','c1cc[nH]c1'],['퓨란','c1ccoc1'],['싸이오펜','c1ccsc1'],['인돌','c1ccc2[nH]ccc2c1'],['퓨린','c1ncc2[nH]cnc2n1']]],
+ ['아미노산',[['글라이신','NCC(=O)O'],['알라닌','CC(N)C(=O)O'],['세린','OCC(N)C(=O)O'],['시스테인','SCC(N)C(=O)O'],['페닐알라닌','NC(Cc1ccccc1)C(=O)O'],['타이로신','NC(Cc1ccc(O)cc1)C(=O)O'],['트립토판','NC(Cc1c[nH]c2ccccc12)C(=O)O'],['프롤린','OC(=O)C1CCCN1'],['라이신','NCCCCC(N)C(=O)O'],['글루탐산','NC(CCC(=O)O)C(=O)O']]],
+ ['생체분자',[['포도당 (피라노스)','OCC1OC(O)C(O)C(O)C1O'],['리보스 (퓨라노스)','OCC1OC(O)C(O)C1O'],['아데닌','Nc1ncnc2[nH]cnc12'],['구아닌','Nc1nc2[nH]cnc2c(=O)[nH]1'],['사이토신','Nc1cc[nH]c(=O)n1'],['싸이민','Cc1c[nH]c(=O)[nH]c1=O'],['유라실','O=c1cc[nH]c(=O)[nH]1'],['스테로이드 골격','C1CCC2C(C1)CCC1C2CCC2CCCC21']]],
+ ['의약품',[['아스피린','CC(=O)Oc1ccccc1C(=O)O'],['카페인','Cn1cnc2c1c(=O)n(C)c(=O)n2C'],['아세트아미노펜','CC(=O)Nc1ccc(O)cc1'],['이부프로펜','CC(C)Cc1ccc(cc1)C(C)C(=O)O'],['아만타딘','NC12CC3CC(CC(C3)C1)C2'],['메만틴','CC12CC3CC(C)(C1)CC(N)(C3)C2']]],
+ ['케이지·탄소',[['아다만테인','C1C2CC3CC1CC(C2)C3'],['다이아만테인','C1C2CC3C4C1C1C(C2)C3CC(C4)C1'],['큐베인','C12C3C4C1C5C2C3C45'],['프리즈메인','C12C3C1C1C2C31'],['C₆₀ 풀러렌','C12=C3C4=C5C6=C7C3=C3C8=C1C1=C9C%10=C2C4=C2C4=C%10C%10=C%11C%12=C4C4=C%13C%14=C(C5=C24)C6=C2C4=C7C3=C3C5=C8C1=C1C(=C9%10)C6=C%11C7=C8C9=C6C1=C5C1=C9C5=C(C4=C31)C2=C%14C(=C58)C%13=C%127'],['사이클로펜테인펜톤','O=C1C(=O)C(=O)C(=O)C1=O']]]
+];
+const PAL_LIGHT={ink:'#1b1f24','el-n':'#2547d0','el-o':'#e0261f','el-s':'#b08a00','el-p':'#d06400','el-hal':'#13893a','el-br':'#9a3320','el-i':'#7b26aa','el-x':'#6b4fa8',
+  'c-red':'#d8261f','c-blue':'#2453d6','c-green':'#16883c','c-orange':'#d46a00','c-purple':'#7c34b8'};
+const COLORS=[['ink','검정'],['c-red','빨강'],['c-blue','파랑'],['c-green','초록'],['c-orange','주황'],['c-purple','보라']];
+const elTok=el=>({N:'el-n',O:'el-o',S:'el-s',Se:'el-s',P:'el-p',F:'el-hal',Cl:'el-hal',Br:'el-br',I:'el-i'})[el]||(el==='C'||el==='H'?'ink':'el-x');
+
+/* ---------- 저장 · 실행 취소 ---------- */
+const KEY='moldraw.v2';
+function save(){ try{ localStorage.setItem(KEY,snap()); }catch(e){} }
+function load(){
+  try{ let t=localStorage.getItem(KEY), d=t&&JSON.parse(t);
+    if(!d){ t=localStorage.getItem('moldraw.v1'); d=t&&JSON.parse(t); }
+    if(!d||!Array.isArray(d.atoms)) return false;
+    M={atoms:d.atoms,bonds:d.bonds||[],shapes:d.shapes||[]}; return true; }catch(e){ return false; }
+}
+function snap(){ return JSON.stringify(M); }
+function pushUndo(){ undoS.push(snap()); if(undoS.length>150) undoS.shift(); redoS.length=0; }
+function restore(t){ const d=JSON.parse(t); M={atoms:d.atoms,bonds:d.bonds,shapes:d.shapes||[]}; clearSel(); changed(); }
+function undo(){ if(!undoS.length) return; redoS.push(snap()); restore(undoS.pop()); }
+function redo(){ if(!redoS.length) return; undoS.push(snap()); restore(redoS.pop()); }
+function changed(){ topo++; render(); updateInfo(); save(); $('undo').disabled=!undoS.length; $('redo').disabled=!redoS.length; updateCopy(); }
+
+/* ---------- 선택 ---------- */
+const selEmpty=()=>!sel.atoms.size&&!sel.shapes.size;
+function clearSel(){ sel={atoms:new Set(),shapes:new Set()}; updateCopy(); }
+function updateCopy(){ const b=$('rb-copy'); if(b) b.disabled=selEmpty(); const g=$('rb-saveGrp'); if(g) g.disabled=!sel.atoms.size; }
+function compOf(i){ const adj=adjOf(M), seen=new Set([i]), q=[i]; for(let h=0;h<q.length;h++) for(const k of adj[q[h]]){ const j=other(M.bonds[k],q[h]); if(!seen.has(j)){ seen.add(j); q.push(j); } } return seen; }
+function selCopy(){ return {atoms:new Set(sel.atoms),shapes:new Set(sel.shapes)}; }
+function fragOf(hit){
+  if(hit.type==='atom'||hit.type==='bond'){ const i=hit.type==='atom'?hit.i:M.bonds[hit.k].a; if(sel.atoms.has(i)) return selCopy(); return {atoms:compOf(i),shapes:new Set()}; }
+  if(hit.type==='shape'){ if(sel.shapes.has(hit.j)) return selCopy(); return {atoms:new Set(),shapes:new Set([hit.j])}; }
+  return null;
+}
+function allSet(){ return {atoms:new Set(M.atoms.map((_,i)=>i)),shapes:new Set(M.shapes.map((_,j)=>j))}; }
+
+/* ---------- 도형 좌표 ---------- */
+const isBox=s=>s.t==='rect'||s.t==='br';
+function shapePts(s){ return s.t==='text'?[[s.x,s.y]]:[[s.x1,s.y1],[s.x2,s.y2]]; }
+// 옥텟 규칙(2주기)과 확장 옥텟(3주기 이상)으로 허용되는 최대 결합 수
+const VE={H:1,B:3,C:4,N:5,O:6,F:7,Al:3,Si:4,P:5,S:6,Cl:7,Ga:3,Ge:4,As:5,Se:6,Br:7,Sn:4,Sb:5,Te:6,I:7,Xe:8};
+function maxValence(el,c){
+  if(!(el in VE)) return null; c=c||0;
+  if(el==='H') return 1-Math.abs(c);
+  if(el==='C') return 4-Math.abs(c);
+  if(el==='B') return Math.min(4,3-c);
+  if(el==='N'||el==='O'||el==='F') return Math.min(4,8-VE[el]+c);
+  return VE[el]-c;
+}
+function valenceBad(a,i,adj){
+  if(a.ab||a.el==='*') return false; const mx=maxValence(a.el,a.c); if(mx==null) return false;
+  let used=(a.r||0)+(a.h!=null?a.h:0); for(const k of adj[i]) used+=M.bonds[k].o;
+  return used>mx;
+}
+function textW(s){ let w=0; for(const ch of s.s) w+= ch.charCodeAt(0)>0x2e80 ? .47 : /[A-Z0-9]/.test(ch)?.31:.26; return Math.max(.3,w); }
+function setBBox(S,pad){
+  let a=1e9,b=-1e9,c=1e9,d=-1e9; const add=(x,y,r)=>{ a=Math.min(a,x-r); b=Math.max(b,x+r); c=Math.min(c,y-r); d=Math.max(d,y+r); };
+  S.atoms.forEach(i=>{ const t=M.atoms[i]; if(!t) return; add(t.x,t.y,pad); const q=pad>0&&LB[i]; if(q){ add(q[0],q[2],pad*.4); add(q[1],q[3],pad*.4); } });
+  S.shapes.forEach(j=>{ const s=M.shapes[j]; if(!s) return; if(s.t==='text'){ const w=textW(s)/2; add(s.x-w,s.y,pad); add(s.x+w,s.y,pad); add(s.x,s.y-.3,pad); add(s.x,s.y+.3,pad); } else for(const p of shapePts(s)) add(p[0],p[1],pad); });
+  return a>b?null:{x1:a,x2:b,y1:c,y2:d,cx:(a+b)/2,cy:(c+d)/2};
+}
+function grabPos(S){ return {a:[...S.atoms].map(i=>[i,M.atoms[i].x,M.atoms[i].y]), s:[...S.shapes].map(j=>[j,JSON.parse(JSON.stringify(M.shapes[j]))])}; }
+function applyFrom(G,f,rigid){
+  for(const [i,x,y] of G.a){ const p=f(x,y); M.atoms[i].x=p[0]; M.atoms[i].y=p[1]; }
+  for(const [j,o] of G.s){ const s=M.shapes[j];
+    if(s.t==='text'){ const p=f(o.x,o.y); s.x=p[0]; s.y=p[1]; }
+    else if(isBox(s)&&rigid){ const cx=(o.x1+o.x2)/2, cy=(o.y1+o.y2)/2, p=f(cx,cy), dx=p[0]-cx, dy=p[1]-cy; s.x1=o.x1+dx; s.x2=o.x2+dx; s.y1=o.y1+dy; s.y2=o.y2+dy; }
+    else { const p=f(o.x1,o.y1), q=f(o.x2,o.y2); s.x1=p[0]; s.y1=p[1]; s.x2=q[0]; s.y2=q[1]; }
+  }
+}
+const rotF=(cx,cy,t)=>{ const c=Math.cos(t), s=Math.sin(t); return (x,y)=>[cx+(x-cx)*c-(y-cy)*s, cy+(x-cx)*s+(y-cy)*c]; };
+function rotateSet(S,deg){ const b=setBBox(S,0); if(!b) return; applyFrom(grabPos(S),rotF(b.cx,b.cy,deg*D2R),true); }
+function flipSet(S,ax){ const b=setBBox(S,0); if(!b) return; applyFrom(grabPos(S), ax==='h'?(x,y)=>[2*b.cx-x,y]:(x,y)=>[x,2*b.cy-y], false); }
+
+/* ---------- 모델 편집 ---------- */
+function findAtomNear(x,y,r,exclude){ let best=-1,bd=r*r; M.atoms.forEach((a,i)=>{ if(i===exclude) return; const d=(a.x-x)**2+(a.y-y)**2; if(d<bd){ bd=d; best=i; } }); return best; }
+function newAtom(x,y,el){ M.atoms.push({x,y,el:el||'C',c:0,h:null}); return M.atoms.length-1; }
+function atomAt(x,y,el){ const i=findAtomNear(x,y,MERGE); return i>=0?i:newAtom(x,y,el); }
+function bondIdx(a,b){ return M.bonds.findIndex(k=>(k.a===a&&k.b===b)||(k.a===b&&k.b===a)); }
+function link(a,b,o,s){
+  if(a===b) return; const k=bondIdx(a,b);
+  if(k>=0){ const B=M.bonds[k]; B.o=o; if(s){ B.s=s; if(B.a!==a){ B.b=B.a; B.a=a; } } else delete B.s; }
+  else { const B={a,b,o}; if(s) B.s=s; M.bonds.push(B); }
+  M.atoms[a].h=null; M.atoms[b].h=null;
+}
+function deleteItems(aS,bS,sS){
+  const touched=new Set();
+  M.bonds.forEach((b,k)=>{ if(bS.has(k)){ touched.add(b.a); touched.add(b.b); } });
+  const keep=M.bonds.filter((b,k)=>!bS.has(k)&&!aS.has(b.a)&&!aS.has(b.b));
+  M.bonds.forEach(b=>{ if(aS.has(b.a)) touched.add(b.b); if(aS.has(b.b)) touched.add(b.a); });
+  const deg=new Map(); keep.forEach(b=>{ deg.set(b.a,(deg.get(b.a)||0)+1); deg.set(b.b,(deg.get(b.b)||0)+1); });
+  const rm=new Set(aS);
+  M.bonds.forEach((b,k)=>{ if(!bS.has(k)) return; for(const i of [b.a,b.b]){ const t=M.atoms[i]; if(!deg.get(i)&&t.el==='C'&&!t.c&&!t.r) rm.add(i); } });
+  const map=new Int32Array(M.atoms.length).fill(-1), na=[];
+  M.atoms.forEach((t,i)=>{ if(!rm.has(i)){ map[i]=na.length; na.push(t); } });
+  touched.forEach(i=>{ if(map[i]>=0) M.atoms[i].h=null; });
+  M.atoms=na; M.bonds=keep.map(b=>Object.assign({},b,{a:map[b.a],b:map[b.b]}));
+  M.shapes=M.shapes.filter((s,j)=>!sS.has(j));
+  clearSel();
+}
+function deleteSel(){ if(selEmpty()) return false; pushUndo(); deleteItems(sel.atoms,new Set(),sel.shapes); return true; }
+function duplicateSel(){
+  if(selEmpty()) return; pushUndo();
+  const map=new Map(), na=new Set(), ns=new Set();
+  sel.atoms.forEach(i=>{ const a=Object.assign({},M.atoms[i]); a.x+=1; a.y+=1; map.set(i,M.atoms.length); na.add(M.atoms.length); M.atoms.push(a); });
+  M.bonds.slice().forEach(b=>{ if(map.has(b.a)&&map.has(b.b)) M.bonds.push(Object.assign({},b,{a:map.get(b.a),b:map.get(b.b)})); });
+  sel.shapes.forEach(j=>{ const s=JSON.parse(JSON.stringify(M.shapes[j])); if(s.t==='text'){ s.x+=1; s.y+=1; } else { s.x1+=1; s.x2+=1; s.y1+=1; s.y2+=1; } ns.add(M.shapes.length); M.shapes.push(s); });
+  sel={atoms:na,shapes:ns}; changed(); toast('복제했습니다. 끌어서 옮기세요.');
+}
+function nbrAngles(i){ const adj=adjOf(M), a=M.atoms[i]; return adj[i].map(k=>{ const o=M.atoms[other(M.bonds[k],i)]; return Math.atan2(o.y-a.y,o.x-a.x); }); }
+function crowd(x,y,skip){ let s=0; M.atoms.forEach((a,i)=>{ if(i===skip) return; const d=Math.hypot(a.x-x,a.y-y); if(d<2.2) s+=1/(d+.05); }); return s; }
+function freeDir(i){
+  const a=M.atoms[i], ang=nbrAngles(i); let C;
+  if(!ang.length) C=[-Math.PI/6,Math.PI/6,-5*Math.PI/6];
+  else if(ang.length===1) C=[ang[0]+2*Math.PI/3,ang[0]-2*Math.PI/3];
+  else { const s=ang.map(t=>(t+2*Math.PI)%(2*Math.PI)).sort((p,q)=>p-q); let bg=-1,bt=0;
+    for(let k=0;k<s.length;k++){ const nx=k===s.length-1?s[0]+2*Math.PI:s[k+1], g=nx-s[k]; if(g>bg){ bg=g; bt=s[k]+g/2; } } C=[bt]; }
+  let best=C[0], bs=1e9; for(const t of C){ const c=crowd(a.x+L*Math.cos(t),a.y+L*Math.sin(t),i); if(c<bs-1e-9){ bs=c; best=t; } }
+  return best;
+}
+function extendFrom(i,o,el,s){ const t=freeDir(i), a=M.atoms[i]; const j=atomAt(a.x+L*Math.cos(t),a.y+L*Math.sin(t),el); if(j!==i) link(i,j,o,s); return j; }
+function setRingDoubles(ids){
+  const n=ids.length, adj=adjOf(M); let best=null;
+  for(const par of [0,1]){ const ok=[];
+    for(let k=par;k<n;k+=2){ const a=ids[k], b=ids[(k+1)%n]; if(k+1>=n&&n%2) continue; const kk=bondIdx(a,b);
+      if(kk>=0&&M.bonds[kk].o===2){ ok.push([a,b]); continue; }
+      const da=adj[a].some(q=>M.bonds[q].o>=2), db=adj[b].some(q=>M.bonds[q].o>=2); if(!da&&!db) ok.push([a,b]); }
+    if(!best||ok.length>best.length) best=ok; }
+  best.forEach(([a,b])=>link(a,b,2));
+}
+// 고리 꼭짓점 좌표: kind = free(빈 곳) | atom | bond, ang = 방향(라디안) 또는 결합의 면(±1), null이면 자동
+function ringGeom(kind,ref,n,ang){
+  const R=L/(2*Math.sin(Math.PI/n)), pts=[]; let cx,cy,st,dir=1;
+  if(kind==='free'){ cx=ref.x; cy=ref.y; st=ang==null?-Math.PI/2+(n%2?0:Math.PI/n):ang; }
+  else if(kind==='atom'){ const a=M.atoms[ref], t=ang==null?freeDir(ref):ang; cx=a.x+R*Math.cos(t); cy=a.y+R*Math.sin(t); st=t+Math.PI; }
+  else {
+    const b=M.bonds[ref], A=M.atoms[b.a], B=M.atoms[b.b], mx=(A.x+B.x)/2, my=(A.y+B.y)/2;
+    let nx=-(B.y-A.y), ny=B.x-A.x; const ln=Math.hypot(nx,ny)||1; nx/=ln; ny/=ln;
+    const ap=L/(2*Math.tan(Math.PI/n)); let side=ang;
+    if(side==null){ const sc=s=>crowd(mx+s*nx*ap,my+s*ny*ap,-1); side=sc(1)<=sc(-1)?1:-1; }
+    cx=mx+side*nx*ap; cy=my+side*ny*ap;
+    const ta=Math.atan2(A.y-cy,A.x-cx), tb=Math.atan2(B.y-cy,B.x-cx); let d=tb-ta; while(d>Math.PI) d-=2*Math.PI; while(d<-Math.PI) d+=2*Math.PI;
+    st=ta; dir=d>0?1:-1;
+  }
+  for(let k=0;k<n;k++){ const t=st+dir*k*2*Math.PI/n; pts.push([cx+R*Math.cos(t),cy+R*Math.sin(t)]); }
+  return pts;
+}
+function placeRingPts(pts,arom){
+  const ids=pts.map(p=>atomAt(p[0],p[1],'C')), n=ids.length;
+  for(let k=0;k<n;k++){ const a=ids[k], b=ids[(k+1)%n]; if(a!==b&&bondIdx(a,b)<0) link(a,b,1); }
+  if(arom) setRingDoubles(ids);
+}
+const snapA=t=>Math.round(t/(Math.PI/12))*(Math.PI/12);
+function ringPv(hit,m){
+  const [n,ar]=RINGDEF[V.ring]; let kind,ref,ang=null;
+  if(hit.type==='atom'){ kind='atom'; ref=hit.i; const a=M.atoms[ref]; if(m&&Math.hypot(m.x-a.x,m.y-a.y)>.25) ang=snapA(Math.atan2(m.y-a.y,m.x-a.x)); }
+  else if(hit.type==='bond'){ kind='bond'; ref=hit.k; if(m){ const b=M.bonds[ref], A=M.atoms[b.a], B=M.atoms[b.b], s=Math.sign(-(B.y-A.y)*(m.x-(A.x+B.x)/2)+(B.x-A.x)*(m.y-(A.y+B.y)/2)); if(s) ang=s; } }
+  else { kind='free'; ref={x:hit.x,y:hit.y}; if(m&&Math.hypot(m.x-ref.x,m.y-ref.y)>.25) ang=snapA(Math.atan2(m.y-ref.y,m.x-ref.x)); }
+  return {kind:'ring',n,ar:!!ar,pts:ringGeom(kind,ref,n,ang)};
+}
+// 선택 상자: 항상 수평 상자
+function selFrame(){ const b=setBBox(sel,.35); return b?{cx:b.cx,cy:b.cy,w:b.x2-b.x1,h:b.y2-b.y1,ang:0}:null; }
+function frameXY(F,lx,ly){ const c=Math.cos(F.ang), s=Math.sin(F.ang); return [F.cx+lx*c-ly*s, F.cy+lx*s+ly*c]; }
+function inSelBox(m){ if(selEmpty()) return false; const F=selFrame(); if(!F) return false; const c=Math.cos(-F.ang), s=Math.sin(-F.ang), dx=m.x-F.cx, dy=m.y-F.cy; return Math.abs(dx*c-dy*s)<=F.w/2&&Math.abs(dx*s+dy*c)<=F.h/2; }
+function attachGroup(target,name,mode){
+  if(asAbbr(name)){
+    if(mode==='free'){ M.atoms.push({x:target.x,y:target.y,el:'*',ab:name,c:0,h:0}); return; }
+    const t=M.atoms[target];
+    if(mode==='replace'){ t.el='*'; t.ab=name; t.c=0; t.h=0; t.r=0; delete t.lab; return; }
+    const d=freeDir(target); M.atoms.push({x:t.x+L*Math.cos(d),y:t.y+L*Math.sin(d),el:'*',ab:name,c:0,h:0}); link(target,M.atoms.length-1,1); M.atoms[M.atoms.length-1].h=0; return;
+  }
+  const g=parseSmiles(groupSmiles(name)); layout2D(g);
+  let ax,ay,d=0;
+  if(mode==='free'){ ax=target.x; ay=target.y; }
+  else { d=freeDir(target); const t=M.atoms[target]; if(mode==='sub'){ ax=t.x+L*Math.cos(d); ay=t.y+L*Math.sin(d); } else { ax=t.x; ay=t.y; } }
+  const a0=g.atoms[0]; let cx=0,cy=0,n=0; g.atoms.forEach((a,i)=>{ if(i){ cx+=a.x; cy+=a.y; n++; } });
+  const rot=n?d-Math.atan2(cy/n-a0.y,cx/n-a0.x):0, c=Math.cos(rot), s=Math.sin(rot), map=[];
+  g.atoms.forEach((a,i)=>{ const x=a.x-a0.x, y=a.y-a0.y, X=ax+x*c-y*s, Y=ay+x*s+y*c;
+    if(i===0&&mode==='replace'){ const t=M.atoms[target]; t.el=a.el; t.c=a.c||0; t.h=null; t.r=0; map[0]=target; return; }
+    map[i]=M.atoms.length; M.atoms.push({x:X,y:Y,el:a.el,c:a.c||0,h:a.h}); });
+  g.bonds.forEach(b=>M.bonds.push({a:map[b.a],b:map[b.b],o:b.o}));
+  if(mode==='sub') link(target,map[0],1);
+}
+function insertMol(m,cx,cy){
+  layout2D(m); let a=1e9,b=-1e9,c=1e9,d=-1e9; for(const t of m.atoms){ a=Math.min(a,t.x); b=Math.max(b,t.x); c=Math.min(c,t.y); d=Math.max(d,t.y); }
+  const off=M.atoms.length, ns=new Set();
+  m.atoms.forEach(t=>{ t.x+=cx-(a+b)/2; t.y+=cy-(c+d)/2; ns.add(M.atoms.length); M.atoms.push(t); });
+  m.bonds.forEach(k=>M.bonds.push({a:k.a+off,b:k.b+off,o:k.o}));
+  sel={atoms:ns,shapes:new Set()};
+}
+
+/* ---------- 좌표 · 판정 ---------- */
+const toModel=(px,py)=>({x:(px-view.tx)/view.s,y:(py-view.ty)/view.s});
+function evPt(e){ const r=svg.getBoundingClientRect(); return {px:e.clientX-r.left,py:e.clientY-r.top}; }
+function distSeg(px,py,x1,y1,x2,y2){ const dx=x2-x1, dy=y2-y1, l2=dx*dx+dy*dy||1e-9; let t=((px-x1)*dx+(py-y1)*dy)/l2; t=Math.max(0,Math.min(1,t)); return Math.hypot(px-x1-t*dx,py-y1-t*dy); }
+function shapeDist(s,x,y){
+  if(s.t==='arrow') return distSeg(x,y,s.x1,s.y1,s.x2,s.y2);
+  if(s.t==='text'){ const w=textW(s)/2; return Math.hypot(Math.max(Math.abs(x-s.x)-w,0),Math.max(Math.abs(y-s.y)-.27,0)); }
+  const x1=Math.min(s.x1,s.x2), x2=Math.max(s.x1,s.x2), y1=Math.min(s.y1,s.y2), y2=Math.max(s.y1,s.y2);
+  if(s.t==='rect'&&s.v==='ellipse'){ const rx=(x2-x1)/2||.01, ry=(y2-y1)/2||.01, cx=x1+rx, cy=y1+ry; return Math.abs(Math.hypot((x-cx)/rx,(y-cy)/ry)-1)*Math.min(rx,ry); }
+  if(s.t==='br') return Math.min(distSeg(x,y,x1,y1,x1,y2),distSeg(x,y,x2,y1,x2,y2));
+  return Math.min(distSeg(x,y,x1,y1,x2,y1),distSeg(x,y,x2,y1,x2,y2),distSeg(x,y,x2,y2,x1,y2),distSeg(x,y,x1,y2,x1,y1));
+}
+function hitTest(px,py){
+  const p=toModel(px,py), rA=Math.max(16/view.s,.28);
+  const ai=findAtomNear(p.x,p.y,rA); if(ai>=0) return {type:'atom',i:ai};
+  const bi=boxAt(p.x,p.y,0); if(bi>=0) return {type:'atom',i:bi};
+  let best=-1, bd=Math.max(11/view.s,.18);
+  M.bonds.forEach((b,k)=>{ const A=M.atoms[b.a], B=M.atoms[b.b], d=distSeg(p.x,p.y,A.x,A.y,B.x,B.y); if(d<bd){ bd=d; best=k; } });
+  if(best>=0) return {type:'bond',k:best};
+  let bj=-1; bd=Math.max(12/view.s,.2);
+  M.shapes.forEach((s,j)=>{ const d=shapeDist(s,p.x,p.y); if(d<bd){ bd=d; bj=j; } });
+  if(bj>=0) return {type:'shape',j:bj};
+  return {type:'none',x:p.x,y:p.y};
+}
+function boxAt(x,y,pad){ for(let i=0;i<LB.length;i++){ const q=LB[i]; if(q&&x>=q[0]-pad&&x<=q[1]+pad&&y>=q[2]-pad&&y<=q[3]+pad) return i; } return -1; }
+function eraseAt(E,x,y){
+  const r=Math.max(15/view.s,.25);
+  LB.forEach((q,i)=>{ if(q&&x>=q[0]-r*.4&&x<=q[1]+r*.4&&y>=q[2]-r*.4&&y<=q[3]+r*.4) E.a.add(i); });
+  M.atoms.forEach((a,i)=>{ if(Math.hypot(a.x-x,a.y-y)<r) E.a.add(i); });
+  M.bonds.forEach((b,k)=>{ const A=M.atoms[b.a], B=M.atoms[b.b]; if(distSeg(x,y,A.x,A.y,B.x,B.y)<r*.8) E.b.add(k); });
+  M.shapes.forEach((s,j)=>{ if(shapeDist(s,x,y)<r) E.s.add(j); });
+}
+const oneAtom=S=>!!S&&S.atoms.size===1&&S.shapes.size===0;
+function handlePos(){ if(tool!=='select'||selEmpty()||oneAtom(sel)) return null; const F=selFrame(); if(!F) return null; const p=frameXY(F,0,-F.h/2-26/view.s), t=frameXY(F,0,-F.h/2); return {x:p[0],y:p[1],tx:t[0],ty:t[1],F}; }
+
+/* ---------- 그리기 ---------- */
+let ringCache={ver:-1,map:null}, LB=[];
+function ringInfo(){
+  if(ringCache.ver===topo) return ringCache.map;
+  const adj=adjOf(M), map=new Map();
+  M.bonds.forEach((b,k)=>{
+    const prev=new Map([[b.a,-1]]), dep=new Map([[b.a,0]]), q=[b.a]; let found=false;
+    for(let h=0;h<q.length&&!found;h++){ const u=q[h]; if(dep.get(u)>=6) continue;
+      for(const kk of adj[u]){ if(kk===k) continue; const v=other(M.bonds[kk],u); if(prev.has(v)) continue; prev.set(v,u); dep.set(v,dep.get(u)+1); if(v===b.b){ found=true; break; } q.push(v); } }
+    if(found){ const path=[]; let x=b.b; while(x!==-1){ path.push(x); x=prev.get(x); } map.set(k,path); }
+  });
+  ringCache={ver:topo,map}; return map;
+}
+const f3=v=>v.toFixed(3);
+function build(P,FONT){
+  const adj=adjOf(M), rings=ringInfo();
+  const labeled=M.atoms.map((a,i)=>!!a.ab||a.el!=='C'||!!a.lab||!!a.c||!!a.r||adj[i].length===0), boxes=[];
+  const ln=(x1,y1,x2,y2,tok,w,ex)=>`<line x1="${f3(x1)}" y1="${f3(y1)}" x2="${f3(x2)}" y2="${f3(y2)}" style="stroke:${P(tok)};stroke-width:${w||.042};stroke-linecap:butt${ex||''}"/>`;
+  const T=(x,y,tok,anchor,body,size)=>`<text transform="translate(${f3(x)} ${f3(y)}) scale(.01)" text-anchor="${anchor}" style="fill:${P(tok)};font-family:${FONT};font-weight:500;font-size:${size||46}px">${body}</text>`;
+  let S='', B='';
+  // 도형
+  M.shapes.forEach(s=>{
+    const k=s.k||'ink', st=`style="stroke:${P(k)};stroke-width:.042;fill:none;stroke-linecap:butt;stroke-linejoin:miter"`;
+    if(s.t==='text'){ S+=T(s.x,s.y+.16,k,'middle',esc(s.s)); return; }
+    if(s.t==='arrow'){
+      const dx=s.x2-s.x1, dy=s.y2-s.y1, len=Math.hypot(dx,dy)||1, ux=dx/len, uy=dy/len, nx=-uy, ny=ux, hl=Math.min(.3,len*.4), hw=.12;
+      const head=(x,y,dx,dy)=>`<polygon points="${f3(x)},${f3(y)} ${f3(x-dx*hl+(-dy)*hw)},${f3(y-dy*hl+dx*hw)} ${f3(x-dx*hl-(-dy)*hw)},${f3(y-dy*hl-dx*hw)}" style="fill:${P(k)}"/>`;
+      if(s.v==='eq'){ const o=.07;
+        S+=ln(s.x1+nx*o,s.y1+ny*o,s.x2+nx*o-ux*.05,s.y2+ny*o-uy*.05,k,.042)+ln(s.x2+nx*o,s.y2+ny*o,s.x2+nx*o-ux*hl+nx*hw*1.3,s.y2+ny*o-uy*hl+ny*hw*1.3,k,.042);
+        S+=ln(s.x2-nx*o,s.y2-ny*o,s.x1-nx*o+ux*.05,s.y1-ny*o+uy*.05,k,.042)+ln(s.x1-nx*o,s.y1-ny*o,s.x1-nx*o+ux*hl-nx*hw*1.3,s.y1-ny*o+uy*hl-ny*hw*1.3,k,.042); }
+      else if(s.v==='retro'){ const o=.08, e=hl*.9;
+        S+=ln(s.x1+nx*o,s.y1+ny*o,s.x2+nx*o-ux*e,s.y2+ny*o-uy*e,k,.042)+ln(s.x1-nx*o,s.y1-ny*o,s.x2-nx*o-ux*e,s.y2-ny*o-uy*e,k,.042);
+        S+=`<polyline points="${f3(s.x2-ux*hl*1.5+nx*hw*2.2)},${f3(s.y2-uy*hl*1.5+ny*hw*2.2)} ${f3(s.x2)},${f3(s.y2)} ${f3(s.x2-ux*hl*1.5-nx*hw*2.2)},${f3(s.y2-uy*hl*1.5-ny*hw*2.2)}" ${st}/>`; }
+      else { const a0=s.v==='res'?hl*.8:0; S+=ln(s.x1+ux*a0,s.y1+uy*a0,s.x2-ux*hl*.8,s.y2-uy*hl*.8,k,.042)+head(s.x2,s.y2,ux,uy); if(s.v==='res') S+=head(s.x1,s.y1,-ux,-uy); }
+      return;
+    }
+    const x1=Math.min(s.x1,s.x2), x2=Math.max(s.x1,s.x2), y1=Math.min(s.y1,s.y2), y2=Math.max(s.y1,s.y2), w=x2-x1, h=y2-y1;
+    if(s.t==='rect'){
+      if(s.v==='ellipse') S+=`<ellipse cx="${f3(x1+w/2)}" cy="${f3(y1+h/2)}" rx="${f3(w/2)}" ry="${f3(h/2)}" ${st}/>`;
+      else S+=`<rect x="${f3(x1)}" y="${f3(y1)}" width="${f3(w)}" height="${f3(h)}" rx="${s.v==='round'?f3(Math.min(.35,w/4,h/4)):0}" ${st}/>`;
+      return;
+    }
+    if(s.t==='br'){ const a=Math.min(.3,w*.2,h*.25), ym=(y1+y2)/2;
+      let p;
+      if(s.v==='paren') p=`M${f3(x1+a)} ${f3(y1)}Q${f3(x1-a*.7)} ${f3(ym)} ${f3(x1+a)} ${f3(y2)}M${f3(x2-a)} ${f3(y1)}Q${f3(x2+a*.7)} ${f3(ym)} ${f3(x2-a)} ${f3(y2)}`;
+      else if(s.v==='curly'){ const c=(x,sg)=>`M${f3(x+sg*a)} ${f3(y1)}Q${f3(x)} ${f3(y1)} ${f3(x)} ${f3(y1+a)}L${f3(x)} ${f3(ym-a*.6)}Q${f3(x)} ${f3(ym)} ${f3(x-sg*a*.7)} ${f3(ym)}Q${f3(x)} ${f3(ym)} ${f3(x)} ${f3(ym+a*.6)}L${f3(x)} ${f3(y2-a)}Q${f3(x)} ${f3(y2)} ${f3(x+sg*a)} ${f3(y2)}`; p=c(x1+a*.4,1)+c(x2-a*.4,-1); }
+      else p=`M${f3(x1+a)} ${f3(y1)}H${f3(x1)}V${f3(y2)}H${f3(x1+a)}M${f3(x2-a)} ${f3(y1)}H${f3(x2)}V${f3(y2)}H${f3(x2-a)}`;
+      S+=`<path d="${p}" ${st}/>`;
+    }
+  });
+  // 결합
+  M.bonds.forEach((b,k)=>{
+    const A=M.atoms[b.a], Bt=M.atoms[b.b]; const dx=Bt.x-A.x, dy=Bt.y-A.y, len=Math.hypot(dx,dy)||1, ux=dx/len, uy=dy/len, nx=-uy, ny=ux;
+    const ej=.0125, ta=labeled[b.a]?.3:(adj[b.a].length>1?-ej:0), tb=labeled[b.b]?.3:(adj[b.b].length>1?-ej:0), x1=A.x+ux*ta, y1=A.y+uy*ta, x2=Bt.x-ux*tb, y2=Bt.y-uy*tb, col=b.k||'ink';
+    if(b.o===1){
+      if(b.s==='w'){ const w=.12; B+=`<polygon points="${f3(x1)},${f3(y1)} ${f3(x2+nx*w)},${f3(y2+ny*w)} ${f3(x2-nx*w)},${f3(y2-ny*w)}" style="fill:${P(col)};stroke:${P(col)};stroke-width:.02;stroke-linejoin:round"/>`; return; }
+      if(b.s==='h'){ const n=Math.max(4,Math.round(len*7)); for(let q=0;q<=n;q++){ const t=q/n, px=x1+(x2-x1)*t, py=y1+(y2-y1)*t, w=.02+.11*t; B+=ln(px-nx*w,py-ny*w,px+nx*w,py+ny*w,col,.035); } return; }
+      if(b.s==='y'){ const n=Math.max(3,Math.round(len*5)), seg=(Math.hypot(x2-x1,y2-y1))/n; let d=`M${f3(x1)} ${f3(y1)}`;
+        for(let q=0;q<n;q++){ const sx=x1+ux*seg*(q+.5), sy=y1+uy*seg*(q+.5), sg=q%2?-1:1, ex=x1+ux*seg*(q+1), ey=y1+uy*seg*(q+1); d+=`Q${f3(sx+nx*.13*sg)} ${f3(sy+ny*.13*sg)} ${f3(ex)} ${f3(ey)}`; }
+        B+=`<path d="${d}" style="fill:none;stroke:${P(col)};stroke-width:.04;stroke-linecap:butt"/>`; return; }
+      if(b.s==='b'){ B+=ln(x1,y1,x2,y2,col,.13); return; }
+      if(b.s==='d'){ B+=ln(x1,y1,x2,y2,col,.042,';stroke-dasharray:.08 .09'); return; }
+      B+=ln(x1,y1,x2,y2,col); return;
+    }
+    if(b.o===3){ B+=ln(x1,y1,x2,y2,col); const o=.15, sh=.06; for(const g of [1,-1]) B+=ln(x1+nx*o*g+ux*sh,y1+ny*o*g+uy*sh,x2+nx*o*g-ux*sh,y2+ny*o*g-uy*sh,col); return; }
+    const mx=(A.x+Bt.x)/2, my=(A.y+Bt.y)/2, path=rings.get(k); let side=0;
+    if(path){ let cx=0,cy=0; for(const i of path){ cx+=M.atoms[i].x; cy+=M.atoms[i].y; } cx/=path.length; cy/=path.length; side=Math.sign(nx*(cx-mx)+ny*(cy-my))||1; }
+    else { const da=adj[b.a].length, db=adj[b.b].length, term=(da===1&&labeled[b.a])||(db===1&&labeled[b.b])||(da===1&&db===1);
+      if(!term){ let sum=0; for(const i of [b.a,b.b]) for(const kk of adj[i]){ if(kk===k) continue; const o=M.atoms[other(M.bonds[kk],i)]; sum+=nx*(o.x-mx)+ny*(o.y-my); } side=Math.sign(sum)||1; } }
+    if(!side){ const o=.085; for(const g of [1,-1]) B+=ln(x1+nx*o*g,y1+ny*o*g,x2+nx*o*g,y2+ny*o*g,col); }
+    else { B+=ln(x1,y1,x2,y2,col); const o=.17*side, sa=labeled[b.a]?0:.13, sb=labeled[b.b]?0:.13; B+=ln(x1+nx*o+ux*sa,y1+ny*o+uy*sa,x2+nx*o-ux*sb,y2+ny*o-uy*sb,col); }
+  });
+  // 원자 기호
+  M.atoms.forEach((a,i)=>{
+    if(!labeled[i]) return;
+    let mean=0; for(const k of adj[i]){ const o=M.atoms[other(M.bonds[k],i)]; mean+=o.x-a.x; }
+    const X=a.x, Y=a.y+.16, yb=[a.y-.3,a.y+.28];
+    if(a.ab){ const tok=a.k||elTok(abFirstEl(a.ab)), right=mean>.15;
+      if(right){ const t=customOf(a.ab)?a.ab:(REV[a.ab]||a.ab), tw=abW(t), ex=X+tW(t.slice(-1))/2; B+=T(ex,Y,tok,'end',abBody(t)); boxes[i]=[ex-tw-.04,ex+.04,...yb]; }
+      else { const tw=abW(a.ab), sx=X-tW(a.ab[0])/2; B+=T(sx,Y,tok,'start',abBody(a.ab)); boxes[i]=[sx-.04,sx+tw+.04,...yb]; }
+      return; }
+    // 원소 기호·수소·전하를 한 글줄로 써서 사이가 벌어지지 않게 한다 (원소 기호 가운데가 원자 위치)
+    const h=hCount(M,i,adj), tok=a.k||elTok(a.el), we=tW(a.el);
+    const left=adj[i].length?mean>.15:/^(O|S|Se|F|Cl|Br|I)$/.test(a.el);
+    const hn=h>1?String(h):'', hw=h?tW('H')+(hn?tW(hn,32):0):0;
+    const chg=a.c?(Math.abs(a.c)>1?Math.abs(a.c):'')+(a.c>0?'+':'−'):'', wc=chg?tW(chg,32):0;
+    const sub=hn?`<tspan dy="12" style="font-size:32px">${hn}</tspan>`:'';
+    let body, sx;
+    if(h&&left){ sx=X-we/2-hw; body='H'+sub+(hn?`<tspan dy="-12">${a.el}</tspan>`:a.el)+(chg?`<tspan dy="-18" style="font-size:32px">${chg}</tspan>`:''); }
+    else { sx=X-we/2; body=a.el+(h?'H'+sub:'')+(chg?`<tspan dy="${hn?-30:-18}" style="font-size:32px">${chg}</tspan>`:''); }
+    B+=T(sx,Y,tok,'start',body);
+    const bx1=sx, bx2=sx+we+hw+wc;
+    if(a.r){ B+=`<circle cx="${f3(X)}" cy="${f3(a.y-.42)}" r=".055" style="fill:${P(tok)}"/>`; }
+    boxes[i]=[bx1-.04,bx2+.04,a.r?a.y-.52:yb[0],yb[1]];
+  });
+  return {S,B,labeled,boxes};
+}
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+const PV=t=>`var(--${t})`;
+const SCREEN_FONT='IBM Plex Sans KR, system-ui, sans-serif';
+function render(){
+  viewG.setAttribute('transform',`translate(${view.tx.toFixed(2)} ${view.ty.toFixed(2)}) scale(${view.s.toFixed(4)})`);
+  const {S,B,boxes}=build(PV,SCREEN_FONT); LB=boxes;
+  shpG.innerHTML=S; molG.innerHTML=B;
+  let o=''; const px=1/view.s;
+  const hl=(x1,y1,x2,y2,tok,w)=>`<line x1="${f3(x1)}" y1="${f3(y1)}" x2="${f3(x2)}" y2="${f3(y2)}" style="stroke:var(--${tok});stroke-width:${w};stroke-linecap:round"/>`;
+  // 선택
+  if(!selEmpty()){
+    M.bonds.forEach(b=>{ if(sel.atoms.has(b.a)&&sel.atoms.has(b.b)){ const A=M.atoms[b.a], Bt=M.atoms[b.b]; o+=hl(A.x,A.y,Bt.x,Bt.y,'accent-soft',.34); } });
+    sel.atoms.forEach(i=>{ const a=M.atoms[i]; if(!a) return; const q=LB[i]; o+= q?`<rect x="${f3(q[0])}" y="${f3(q[2])}" width="${f3(q[1]-q[0])}" height="${f3(q[3]-q[2])}" rx=".1" style="fill:var(--accent-soft)"/>`:`<circle cx="${f3(a.x)}" cy="${f3(a.y)}" r=".22" style="fill:var(--accent-soft)"/>`; });
+    sel.shapes.forEach(j=>{ const b=setBBox({atoms:new Set(),shapes:new Set([j])},.12); if(b) o+=`<rect x="${f3(b.x1)}" y="${f3(b.y1)}" width="${f3(b.x2-b.x1)}" height="${f3(b.y2-b.y1)}" style="fill:var(--accent-soft);stroke:none"/>`; });
+    const b=selFrame();
+    if(b){ const C=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([u,v])=>frameXY(b,u*b.w/2,v*b.h/2));
+      o+=`<polygon points="${C.map(q=>f3(q[0])+','+f3(q[1])).join(' ')}" style="fill:none;stroke:var(--accent);stroke-width:${f3(1.2*px)};stroke-dasharray:${f3(5*px)} ${f3(4*px)}"/>`;
+      const hp=handlePos(); if(hp){ o+=hl(hp.x,hp.y,hp.tx,hp.ty,'accent',1.2*px)+`<circle cx="${f3(hp.x)}" cy="${f3(hp.y)}" r="${f3(9*px)}" style="fill:var(--panel);stroke:var(--accent);stroke-width:${f3(1.5*px)}"/>`+
+        `<path d="M${f3(hp.x-4*px)} ${f3(hp.y)}a${f3(4*px)} ${f3(4*px)} 0 1 1 ${f3(4*px)} ${f3(4*px)}" style="fill:none;stroke:var(--accent);stroke-width:${f3(1.4*px)}"/>`; } }
+  }
+  // 지울 항목 표시
+  if(drag&&drag.E){ const E=drag.E;
+    E.b.forEach(k=>{ const b=M.bonds[k]; if(!b) return; const A=M.atoms[b.a], Bt=M.atoms[b.b]; o+=hl(A.x,A.y,Bt.x,Bt.y,'erase',.3); });
+    E.a.forEach(i=>{ const a=M.atoms[i]; if(!a) return; const q=LB[i]; if(q) o+=`<rect x="${f3(q[0])}" y="${f3(q[2])}" width="${f3(q[1]-q[0])}" height="${f3(q[3]-q[2])}" rx=".1" style="fill:var(--erase)"/>`; else o+=`<circle cx="${f3(a.x)}" cy="${f3(a.y)}" r=".24" style="fill:var(--erase)"/>`; });
+    E.s.forEach(j=>{ const b=setBBox({atoms:new Set(),shapes:new Set([j])},.12); if(b) o+=`<rect x="${f3(b.x1)}" y="${f3(b.y1)}" width="${f3(b.x2-b.x1)}" height="${f3(b.y2-b.y1)}" style="fill:var(--erase)"/>`; });
+    if(drag.trail.length>1) o+=`<polyline points="${drag.trail.slice(-40).map(p=>f3(p.x)+','+f3(p.y)).join(' ')}" style="fill:none;stroke:var(--muted);stroke-width:${f3(10*px)};stroke-linecap:round;stroke-linejoin:round;opacity:.18"/>`;
+  }
+  // 원자가 규칙 위반 표시
+  { const adj=adjOf(M); M.atoms.forEach((a,i)=>{ if(!valenceBad(a,i,adj)) return; const q=LB[i];
+      const st=`style="fill:none;stroke:var(--danger);stroke-width:${f3(1.5*px)};stroke-dasharray:${f3(3*px)} ${f3(2.5*px)}"`;
+      o+= q?`<rect x="${f3(q[0]-.04)}" y="${f3(q[2]-.04)}" width="${f3(q[1]-q[0]+.08)}" height="${f3(q[3]-q[2]+.08)}" rx=".12" ${st}/>`:`<circle cx="${f3(a.x)}" cy="${f3(a.y)}" r=".26" ${st}/>`; }); }
+  // 마우스 하이라이트
+  if(hover&&!drag){ if(hover.type==='atom'&&M.atoms[hover.i]){ const a=M.atoms[hover.i]; o+=`<circle cx="${f3(a.x)}" cy="${f3(a.y)}" r=".27" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:.03"/>`; }
+    else if(hover.type==='bond'&&M.bonds[hover.k]){ const b=M.bonds[hover.k], A=M.atoms[b.a], Bt=M.atoms[b.b]; o=hl(A.x,A.y,Bt.x,Bt.y,'accent-soft',.32)+o; }
+    else if(hover.type==='shape'&&M.shapes[hover.j]){ const b=setBBox({atoms:new Set(),shapes:new Set([hover.j])},.12); if(b) o+=`<rect x="${f3(b.x1)}" y="${f3(b.y1)}" width="${f3(b.x2-b.x1)}" height="${f3(b.y2-b.y1)}" style="fill:var(--accent-soft)"/>`; } }
+  // 미리보기
+  if(drag&&drag.pv){ const p=drag.pv;
+    if(p.kind==='bond') o+=`<line x1="${f3(p.x1)}" y1="${f3(p.y1)}" x2="${f3(p.x2)}" y2="${f3(p.y2)}" style="stroke:var(--accent);stroke-width:.06;stroke-dasharray:.14 .1;stroke-linecap:round"/><circle cx="${f3(p.x2)}" cy="${f3(p.y2)}" r=".08" style="fill:var(--accent)"/>`;
+    else if(p.kind==='arrow') o+=`<line x1="${f3(p.x1)}" y1="${f3(p.y1)}" x2="${f3(p.x2)}" y2="${f3(p.y2)}" style="stroke:var(--accent);stroke-width:.05;stroke-dasharray:.14 .1"/>`;
+    else if(p.kind==='box'||p.kind==='marq'){ const x1=Math.min(p.x1,p.x2), y1=Math.min(p.y1,p.y2); o+=`<rect x="${f3(x1)}" y="${f3(y1)}" width="${f3(Math.abs(p.x2-p.x1))}" height="${f3(Math.abs(p.y2-p.y1))}" style="fill:${p.kind==='marq'?'var(--accent-soft)':'none'};stroke:var(--accent);stroke-width:${f3(1.2*px)};stroke-dasharray:${f3(5*px)} ${f3(4*px)}"/>`; }
+    else if(p.kind==='ring'){ const P=p.pts, n=P.length; let cx=0,cy=0; P.forEach(q=>{ cx+=q[0]; cy+=q[1]; }); cx/=n; cy/=n;
+      o+=`<polygon points="${P.map(q=>f3(q[0])+','+f3(q[1])).join(' ')}" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:.06;stroke-dasharray:.14 .1;stroke-linejoin:round"/>`;
+      if(p.ar) for(let k=0;k<(n%2?n-1:n);k+=2){ const a=P[k], b=P[(k+1)%n], f=.74; o+=`<line x1="${f3(cx+(a[0]-cx)*f)}" y1="${f3(cy+(a[1]-cy)*f)}" x2="${f3(cx+(b[0]-cx)*f)}" y2="${f3(cy+(b[1]-cy)*f)}" style="stroke:var(--accent);stroke-width:.05;stroke-linecap:round"/>`; }
+      P.forEach(q=>{ o+=`<circle cx="${f3(q[0])}" cy="${f3(q[1])}" r=".06" style="fill:var(--accent)"/>`; }); }
+    else if(p.kind==='lasso') o+=`<polygon points="${p.pts.map(q=>f3(q.x)+','+f3(q.y)).join(' ')}" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:${f3(1.2*px)};stroke-dasharray:${f3(5*px)} ${f3(4*px)}"/>`;
+  }
+  ovl.innerHTML=o;
+}
+function fmtFormula(f){ let t=f.parts.map(([e,n])=>e+(n>1?`<sub>${n}</sub>`:'')).join(''); if(f.chg) t+=`<sup>${Math.abs(f.chg)>1?Math.abs(f.chg):''}${f.chg>0?'+':'−'}</sup>`; return t; }
+function updateInfo(){ return;
+  const el=$('chem');
+  if(!M.atoms.length){ el.textContent=M.shapes.length?'원자 없음':'빈 캔버스'; return; }
+  const f=formula(M); el.innerHTML=`${fmtFormula(f)} · ${f.unknown?'—':f.mw.toFixed(2)}`;
+}
+
+/* ---------- 보기 ---------- */
+function fit(){
+  const r=svg.getBoundingClientRect(); if(!r.width) return;
+  const b=setBBox(allSet(),.8);
+  if(!b){ view={s:42,tx:r.width/2,ty:r.height/2}; render(); return; }
+  const padX=120, padTop=70, padBot=190, aw=Math.max(80,r.width-padX), ah=Math.max(80,r.height-padTop-padBot);
+  const s=Math.max(2,Math.min(56,aw/(b.x2-b.x1),ah/(b.y2-b.y1)));
+  view={s,tx:r.width/2-s*b.cx,ty:padTop+ah/2-s*b.cy}; render();
+}
+function zoomAt(px,py,f){ const ns=Math.max(2,Math.min(200,view.s*f)), k=ns/view.s; view.tx=px-(px-view.tx)*k; view.ty=py-(py-view.ty)*k; view.s=ns; }
+function toast(msg,ms){ const t=$('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast.h); toast.h=setTimeout(()=>t.hidden=true,ms||2200); }
+
+/* ---------- 도구 정의 ---------- */
+const STRIPS={
+  bond:[['single','단일결합'],['w','쐐기 결합 (앞으로)'],['h','점선 쐐기 (뒤로)'],['y','물결 결합'],['b','굵은 결합'],['d','점선 결합']],
+  multi:[['double','이중결합'],['triple','삼중결합']],
+  ring:[['r6a','벤젠'],['r5a','사이클로펜타다이엔 (콘쥬게이티드 5원자 고리)'],['r3','3원자 고리'],['r4','4원자 고리'],['r5','5원자 고리'],['r6','6원자 고리'],['r7','7원자 고리'],['r8','8원자 고리']],
+  arrow:[['fwd','반응 화살표'],['eq','평형 화살표'],['res','공명 화살표'],['retro','역합성 화살표']],
+  shape:[['rect','사각형'],['round','둥근 사각형'],['ellipse','타원']],
+  bracket:[['sq','대괄호'],['paren','소괄호'],['curly','중괄호']],
+  charge:[['+','양전하 +1','plus'],['-','음전하 −1','minus'],['rad','라디칼','rad'],['0','전하 없애기','zero']],
+  select:[['rect','사각형 선택','select'],['lasso','올가미 선택','lasso']],
+  rotate:[['ccw15','15° 반시계','ccw','15°'],['cw15','15° 시계','cw','15°'],['ccw90','90° 반시계','ccw','90°'],['cw90','90° 시계','cw','90°'],['180','180°','cw','180°']],
+  flip:[['h','좌우 뒤집기','fh','좌우'],['v','상하 뒤집기','fv','상하']]
+};
+const RINGDEF={r6a:[6,true],r5a:[5,true],r3:[3],r4:[4],r5:[5],r6:[6],r7:[7],r8:[8]};
+const ROT={ccw15:-15,cw15:15,ccw90:-90,cw90:90,'180':180};
+const HINTS={
+  hand:'분자나 도형을 끌어서 옮깁니다. 화면 이동·확대는 두 손가락으로 합니다.',
+  erase:'한 손가락으로 문지르면 지나간 원자·결합·도형을 한 번에 지웁니다.',
+  atom:()=>`${V.atom}: 원자를 탭하면 바꾸고, 빈 곳을 탭하면 놓고, 원자에서 끌면 결합과 함께 붙입니다.`,
+  text:'빈 곳을 탭하면 글자를 넣고, 원자를 탭하면 원소 기호나 작용기(OMe, COOH…)로 바꿉니다.',
+  select:'끌어서 영역을 선택하고, 선택한 것을 끌면 옮깁니다. 위쪽 손잡이를 끌면 회전합니다.',
+  rotate:'분자를 탭하면 고른 각도만큼, 끌면 자유롭게 돌립니다.',
+  flip:'분자나 도형을 탭하면 뒤집습니다.',
+  color:'항목을 탭해 색을 칠합니다. 선택이 있으면 색을 고를 때 선택 영역에 바로 칠합니다.',
+  group:'원자를 탭하면 작용기를 붙이고, 빈 곳을 탭하면 작용기만 놓습니다.',
+  ring:'누른 채로 손가락을 돌리면 고리 방향을 미리 보며 고를 수 있습니다. 결합 위에서는 붙일 쪽을 고릅니다.'
+};
+const ROW1=[['bond','결합','single',true],['multi','다중결합','double',true],['ring','고리','r6',true],['text','텍스트','text'],['arrow','화살표','fwd',true],['shape','도형','rect',true],['bracket','괄호','sq',true]];
+const ROW2=[['charge','전하·라디칼','plus',true],['color','색','color',true],['flip','뒤집기','align',true],['rotate','회전','rotate',true],['3d','3D 보기',null],['info','분자 정보','info'],['more','더보기','more',true]];
+const RCOL=[[['hand','이동','hand'],['select','선택','select',true],['erase','지우개','erase'],['copy','선택 영역 복제','copy']],[['group','작용기','group',true],['saveGrp','선택한 구조를 작용기로 저장','saveGrp']],[['camera','이미지로 내보내기','camera']]];
+
+function mkTB(id,label,icon,hasVar,extra){
+  const b=document.createElement('button'); b.className='tb'+(hasVar?' var':''); b.dataset.t=id; b.id='rb-'+id;
+  b.setAttribute('aria-label',label); b.title=label; b.innerHTML=icon?ic(I[icon]):(extra||''); return b;
+}
+function buildUI(){
+  $('undo').innerHTML=ic(I.undo); $('redo').innerHTML=ic(I.redo); $('fileBtn').innerHTML=ic(I.dots);
+  $('tplBtn').innerHTML=ic(I.book); $('fitBtn').innerHTML=ic(I.fit);
+  for(const [row,defs] of [['trow1',ROW1],['trow2',ROW2]]) for(const [id,label,icon,v] of defs){
+    const b=mkTB(id,label,icon,v,id==='3d'?'<span class="t3">3D</span>':''); b.onclick=()=>pickTool(id); $(row).append(b); }
+  RCOL.forEach(g=>{ const box=document.createElement('div'); box.className='fl'; for(const [id,label,icon,v] of g){ const b=mkTB(id,label,icon,v); b.onclick=()=>pickTool(id); box.append(b); } $('rcol').append(box); });
+  buildElCol();
+}
+let ELCOL=['H','B','C','N','O'];
+try{ const t=JSON.parse(localStorage.getItem('moldraw.elcol')||'null'); if(Array.isArray(t)&&t.length) ELCOL=t.filter(e=>typeof e==='string'); }catch(e){}
+function saveElCol(){ try{ localStorage.setItem('moldraw.elcol',JSON.stringify(ELCOL)); }catch(e){} }
+function buildElCol(){
+  const col=$('elCol'); col.innerHTML='';
+  const list=ELCOL.slice(); if(customEl&&!list.includes(customEl)) list.push(customEl);
+  for(const e of list){ const b=document.createElement('button'); b.className='tb'; b.dataset.t='el:'+e; b.innerHTML=`<span class="e-${elTok(e)==='el-x'?'x':e}">${e}</span>`; b.setAttribute('aria-label',e+' 원소'); b.onclick=()=>{ V.atom=e; pickTool('atom'); }; col.append(b); }
+  const m=document.createElement('button'); m.className='tb'; m.innerHTML=ic(I.dots); m.setAttribute('aria-label','다른 원소'); m.title='주기율표'; m.onclick=openPeriodic; col.append(m);
+  syncPressed();
+}
+function syncPressed(){
+  document.querySelectorAll('.trow .tb,.rcol .tb').forEach(b=>{ const t=b.dataset.t; b.setAttribute('aria-pressed',String(t===tool||(t===strip&&(t==='more')))); });
+  document.querySelectorAll('#elCol .tb').forEach(b=>{ if(b.dataset.t) b.setAttribute('aria-pressed',String(tool==='atom'&&b.dataset.t==='el:'+V.atom)); });
+}
+const DRAW_TOOLS=new Set(['bond','multi','ring','atom','text','arrow','shape','bracket','charge','group']);
+function pickTool(id){
+  if(id==='3d'){ open3D(); return; }
+  if(id==='info'){ openInfo(); return; }
+  if(id==='camera'){ openImage(); return; }
+  if(id==='copy'){ duplicateSel(); return; }
+  if(id==='saveGrp'){ saveSelAsGroup(); return; }
+  if(id==='more'){ strip=strip==='more'?tool:'more'; buildStrip(); syncPressed(); return; }
+  if(id==='erase'&&!selEmpty()){ deleteSel(); changed(); toast('선택한 항목을 지웠습니다.'); }
+  if(DRAW_TOOLS.has(id)&&!selEmpty()){ clearSel(); render(); }
+  tool=id; strip=id; buildStrip(); syncPressed(); render();
+}
+function buildStrip(){
+  const r=$('vrow'); r.innerHTML=''; r.hidden=false;
+  const key=strip;
+  if(key==='more'){
+    const acts=[['clean','구조 정리',()=>{ if(!M.atoms.length) return; pushUndo(); layout2D(M); changed(); fit(); toast('구조를 다시 배치했습니다.'); }],
+      ['all','전체 선택',()=>{ sel=allSet(); if(tool!=='select'&&tool!=='hand'){ tool='select'; } strip='more'; syncPressed(); updateCopy(); render(); }],
+      ['smiles','SMILES',openSmiles],['fit','화면 맞춤',fit]];
+    for(const [icn,label,fn] of acts){ const b=document.createElement('button'); b.className='act'; b.innerHTML=ic(I[icn])+label; b.onclick=fn; r.append(b); }
+    return;
+  }
+  if(key==='color'){
+    for(const [tok,label] of COLORS){ const b=document.createElement('button'); b.className='tb'; b.setAttribute('aria-label',label); b.title=label; b.setAttribute('aria-pressed',String(V.color===tok));
+      b.innerHTML=`<span class="sw" style="background:var(--${tok})"></span>`; b.onclick=()=>{ V.color=tok; if(!selEmpty()) paintSet(sel,tok); buildStrip(); }; r.append(b); }
+    return;
+  }
+  if(key==='group'){
+    for(const g of [...CUSTOM.map(c=>c.n),...GROUP_QUICK.filter(q=>!customOf(q))]){ const b=document.createElement('button'); b.className='chip'; b.textContent=g; b.setAttribute('aria-pressed',String(V.group===g)); b.onclick=()=>{ V.group=g; buildStrip(); }; r.append(b); }
+    if(!GROUP_QUICK.includes(V.group)&&!customOf(V.group)){ const b=document.createElement('button'); b.className='chip'; b.textContent=V.group; b.setAttribute('aria-pressed','true'); r.insertBefore(b,r.firstChild); }
+    const m=document.createElement('button'); m.className='chip'; m.textContent='＋ 만들기·전체'; m.onclick=openGroups; r.append(m); return;
+  }
+  const defs=STRIPS[key];
+  if(!defs){ r.hidden=true; return; }
+  for(const [v,label,icon,txt] of defs){ const b=document.createElement('button'); b.className='tb'; b.setAttribute('aria-label',label); b.title=label;
+    b.setAttribute('aria-pressed',String(V[key]===v)); b.innerHTML=txt?`<span style="display:flex;flex-direction:column;align-items:center;gap:0;line-height:1">${ic(I[icon||v])}<small style="font-size:10px">${txt}</small></span>`:ic(I[icon||v]);
+    if(txt) b.style.width='52px';
+    b.onclick=()=>{ V[key]=v; if((key==='rotate'||key==='flip')&&!selEmpty()&&!(key==='rotate'&&oneAtom(sel))){ pushUndo(); if(key==='rotate'){ const F=selFrame(), t=ROT[v]*D2R; applyFrom(grabPos(sel),rotF(F.cx,F.cy,t),true); } else flipSet(sel,v); changed(); } buildStrip(); };
+    r.append(b); }
+}
+function paintSet(S,tok){
+  pushUndo(); const k=tok==='ink'?undefined:tok;
+  S.atoms.forEach(i=>{ M.atoms[i].k=k; });
+  M.bonds.forEach(b=>{ if(S.atoms.has(b.a)&&S.atoms.has(b.b)) b.k=k; });
+  S.shapes.forEach(j=>{ M.shapes[j].k=k; });
+  changed();
+}
+
+/* ---------- 탭 ---------- */
+function tap(hit){
+  switch(tool){
+  case 'pickAttach': { if(hit.type==='atom'&&sel.atoms.has(hit.i)){ tool=pendingTool||'select'; syncPressed(); openSaveGroup(hit.i,null); } else toast('선택한 구조 안에서 붙는 원자를 탭하세요.'); return false; }
+  case 'hand': return false;
+  case 'select': {
+    if(hit.type==='none'){ if(!selEmpty()){ clearSel(); render(); } return false; }
+    const f=fragOf(hit); sel=f; updateCopy(); render(); return false; }
+  case 'atom': { const el=V.atom;
+    if(hit.type==='atom'){ const a=M.atoms[hit.i];
+      if(el==='C'&&a.el==='C'&&!a.lab&&!a.ab){ pushUndo(); a.lab=1; return true; }
+      if(a.el===el&&!a.c&&!a.ab){ pushUndo(); const j=extendFrom(hit.i,1,el==='H'?'C':el); if(el==='C'&&M.atoms[j]) M.atoms[j].lab=1; return true; }
+      pushUndo(); a.el=el; a.h=null; delete a.ab; if(el==='C') a.lab=1; return true; }
+    if(hit.type==='none'){ pushUndo(); const j=newAtom(hit.x,hit.y,el); if(el==='C') M.atoms[j].lab=1; return true; }
+    return false; }
+  case 'bond': { const s=V.bond==='single'?null:V.bond;
+    if(hit.type==='atom'){ pushUndo(); extendFrom(hit.i,1,'C',s); return true; }
+    if(hit.type==='bond'){ pushUndo(); const b=M.bonds[hit.k];
+      if(!s){ if(b.s){ delete b.s; b.o=1; } else b.o=(b.o%3)+1; }
+      else if(b.s===s&&b.o===1){ const t=b.a; b.a=b.b; b.b=t; }
+      else { b.o=1; b.s=s; }
+      M.atoms[b.a].h=null; M.atoms[b.b].h=null; return true; }
+    if(hit.type==='none'){ pushUndo(); const i=newAtom(hit.x,hit.y), j=newAtom(hit.x+L*Math.cos(-Math.PI/6),hit.y+L*Math.sin(-Math.PI/6)); link(i,j,1,s); return true; }
+    return false; }
+  case 'multi': { const o=V.multi==='triple'?3:2;
+    if(hit.type==='atom'){ pushUndo(); extendFrom(hit.i,o,'C'); return true; }
+    if(hit.type==='bond'){ pushUndo(); const b=M.bonds[hit.k]; delete b.s; b.o=b.o===o?1:o; M.atoms[b.a].h=null; M.atoms[b.b].h=null; return true; }
+    if(hit.type==='none'){ pushUndo(); const i=newAtom(hit.x,hit.y), j=newAtom(hit.x+L*Math.cos(-Math.PI/6),hit.y+L*Math.sin(-Math.PI/6)); link(i,j,o); return true; }
+    return false; }
+  case 'ring': { if(hit.type==='shape'||hit.type==='handle') return false; const p=ringPv(hit,null); pushUndo(); placeRingPts(p.pts,p.ar); return true; }
+  case 'text': openText(hit); return false;
+  case 'arrow': if(hit.type!=='none') return false; pushUndo(); M.shapes.push({t:'arrow',v:V.arrow,x1:hit.x-1,y1:hit.y,x2:hit.x+1,y2:hit.y}); return true;
+  case 'shape': case 'bracket': if(hit.type!=='none') return false; pushUndo(); M.shapes.push({t:tool==='shape'?'rect':'br',v:V[tool],x1:hit.x-1.2,y1:hit.y-.8,x2:hit.x+1.2,y2:hit.y+.8}); return true;
+  case 'charge': { if(hit.type!=='atom'||M.atoms[hit.i].ab) return false; pushUndo(); const a=M.atoms[hit.i];
+    if(V.charge==='+') a.c=Math.min(3,(a.c||0)+1); else if(V.charge==='-') a.c=Math.max(-3,(a.c||0)-1); else if(V.charge==='rad') a.r=a.r?0:1; else { a.c=0; a.r=0; }
+    a.h=null; return true; }
+  case 'color': { if(hit.type==='none') return false; const k=V.color==='ink'?undefined:V.color; pushUndo();
+    if(hit.type==='atom') M.atoms[hit.i].k=k; else if(hit.type==='bond') M.bonds[hit.k].k=k; else M.shapes[hit.j].k=k; return true; }
+  case 'rotate': { const f=fragOf(hit); if(!f||oneAtom(f)) return false; pushUndo(); rotateSet(f,ROT[V.rotate]); return true; }
+  case 'flip': { const f=fragOf(hit); if(!f) return false; pushUndo(); flipSet(f,V.flip); return true; }
+  case 'group': { if(hit.type==='atom'){ pushUndo(); attachGroup(hit.i,V.group,'sub'); return true; }
+    if(hit.type==='none'){ pushUndo(); attachGroup({x:hit.x,y:hit.y},V.group,'free'); return true; } return false; }
+  }
+  return false;
+}
+
+/* ---------- 포인터 ---------- */
+const ptrs=new Map(); let pinch=null, mpan=null;
+function snapEnd(sx,sy,px,py,si){
+  const p=toModel(px,py), near=findAtomNear(p.x,p.y,Math.max(16/view.s,.3),si);
+  if(near>=0) return {x:M.atoms[near].x,y:M.atoms[near].y,i:near};
+  let t=Math.atan2(p.y-sy,p.x-sx); t=Math.round(t/(Math.PI/12))*(Math.PI/12);
+  return {x:sx+L*Math.cos(t),y:sy+L*Math.sin(t),i:-1};
+}
+function cancelDrag(){ if(!drag) return; if(drag.snap){ const d=JSON.parse(drag.snap); M={atoms:d.atoms,bonds:d.bonds,shapes:d.shapes||[]}; topo++; } drag=null; render(); }
+function pointInPoly(x,y,P){ let c=false; for(let i=0,j=P.length-1;i<P.length;j=i++){ const a=P[i], b=P[j]; if(((a.y>y)!==(b.y>y))&&(x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)) c=!c; } return c; }
+svg.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('selectstart',e=>{ const t=e.target&&e.target.nodeType===1?e.target:e.target&&e.target.parentElement; if(t&&t.closest&&t.closest('input,textarea,.sheet')) return; e.preventDefault(); });
+$('stage').addEventListener('contextmenu',e=>e.preventDefault());
+// iOS Safari: 페이지 확대 제스처와 여러 손가락 스크롤 막기 (캔버스 두 손가락 조작은 포인터 이벤트로 처리)
+for(const ev of ['gesturestart','gesturechange','gestureend']) document.addEventListener(ev,e=>e.preventDefault(),{passive:false});
+document.addEventListener('touchmove',e=>{ if(e.touches&&e.touches.length>1) e.preventDefault(); },{passive:false});
+svg.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='mouse'&&e.button!==0){ mpan={x:e.clientX,y:e.clientY}; try{ svg.setPointerCapture(e.pointerId); }catch(_){} return; }
+  try{ svg.setPointerCapture(e.pointerId); }catch(_){} const p=evPt(e); ptrs.set(e.pointerId,p);
+  if(ptrs.size===2){ cancelDrag(); const [a,b]=[...ptrs.values()]; pinch={d:Math.hypot(a.px-b.px,a.py-b.py),cx:(a.px+b.px)/2,cy:(a.py+b.py)/2}; hover=null; render(); return; }
+  if(ptrs.size>2||pinch) return;
+  const m=toModel(p.px,p.py);
+  drag={start:p,last:p,sm:m,moved:false,mode:null,hit:null};
+  const hp=handlePos();
+  if(hp&&Math.hypot(m.x-hp.x,m.y-hp.y)<14/view.s){ drag.hit={type:'handle'}; }
+  else drag.hit=hitTest(p.px,p.py);
+  if(tool==='erase'){ drag.mode='erase'; drag.E={a:new Set(),b:new Set(),s:new Set()}; drag.trail=[m]; eraseAt(drag.E,m.x,m.y); }
+  else {
+    drag.selPress=drag.hit.type!=='handle'&&inSelBox(m);
+    if(tool==='ring'&&!drag.selPress&&drag.hit.type!=='shape'&&drag.hit.type!=='handle'){ drag.mode='ring'; drag.pv=ringPv(drag.hit,null); }
+  }
+  hover=null; render();
+});
+svg.addEventListener('pointermove',e=>{
+  if(mpan){ view.tx+=e.clientX-mpan.x; view.ty+=e.clientY-mpan.y; mpan={x:e.clientX,y:e.clientY}; render(); return; }
+  const p=evPt(e);
+  if(!ptrs.has(e.pointerId)){
+    if(e.pointerType==='mouse'&&!drag){ const h=hitTest(p.px,p.py), nh=h.type==='none'?null:h; if(JSON.stringify(nh)!==JSON.stringify(hover)){ hover=nh; render(); } }
+    return; }
+  ptrs.set(e.pointerId,p);
+  if(pinch){ if(ptrs.size>=2){ const [a,b]=[...ptrs.values()], d=Math.hypot(a.px-b.px,a.py-b.py), cx=(a.px+b.px)/2, cy=(a.py+b.py)/2;
+      view.tx+=cx-pinch.cx; view.ty+=cy-pinch.cy; zoomAt(cx,cy,d/(pinch.d||d)); pinch={d,cx,cy}; render(); } return; }
+  if(!drag) return;
+  const m=toModel(p.px,p.py);
+  if(drag.mode==='erase'){
+    const last=drag.trail[drag.trail.length-1], dist=Math.hypot(m.x-last.x,m.y-last.y), n=Math.ceil(dist/(6/view.s));
+    for(let k=1;k<=n;k++){ const t=k/n; eraseAt(drag.E,last.x+(m.x-last.x)*t,last.y+(m.y-last.y)*t); }
+    drag.trail.push(m); drag.moved=drag.moved||Math.hypot(p.px-drag.start.px,p.py-drag.start.py)>=7; render(); return;
+  }
+  if(!drag.moved&&Math.hypot(p.px-drag.start.px,p.py-drag.start.py)<7) return;
+  if(drag.mode==='ring'){ drag.moved=true; drag.pv=ringPv(drag.hit,m); render(); return; }
+  const h=drag.hit;
+  if(!drag.moved){
+    drag.moved=true;
+    if(h.type==='handle'){ drag.mode='rot'; drag.set=selCopy(); }
+    else if(drag.selPress){ drag.mode='move'; drag.set=selCopy(); }
+    else if(tool==='hand'&&h.type!=='none'){ drag.mode='move'; drag.set=fragOf(h); }
+    else if(tool==='select'){ if(h.type!=='none'&&((h.type==='atom'&&sel.atoms.has(h.i))||(h.type==='bond'&&sel.atoms.has(M.bonds[h.k].a))||(h.type==='shape'&&sel.shapes.has(h.j)))){ drag.mode='move'; drag.set=selCopy(); } else { drag.mode=V.select==='lasso'?'lasso':'marq'; drag.pts=[drag.sm]; } }
+    else if(tool==='rotate'&&h.type!=='none'&&!oneAtom(fragOf(h))){ drag.mode='rot'; drag.set=fragOf(h); }
+    else if((tool==='bond'||tool==='multi'||tool==='atom')&&(h.type==='atom'||h.type==='none')) drag.mode='draw';
+    else if(tool==='arrow') drag.mode='arrow';
+    else if(tool==='shape'||tool==='bracket') drag.mode='box';
+    else drag.mode='none';
+    if(drag.mode==='move'||drag.mode==='rot'){ drag.snap=snap(); drag.G=grabPos(drag.set); const b=setBBox(drag.set,0); drag.c=b?[b.cx,b.cy]:[m.x,m.y];
+      drag.isSel=!selEmpty()&&drag.set.atoms.size===sel.atoms.size&&drag.set.shapes.size===sel.shapes.size&&[...drag.set.atoms].every(i=>sel.atoms.has(i));
+      if(drag.isSel){ const F=selFrame(); drag.F0=Object.assign({},F); if(drag.mode==='rot') drag.c=[F.cx,F.cy]; }
+      drag.a0=Math.atan2(drag.sm.y-drag.c[1],drag.sm.x-drag.c[0]); }
+  }
+  if(drag.mode==='move'){ const dx=m.x-drag.sm.x, dy=m.y-drag.sm.y; applyFrom(drag.G,(x,y)=>[x+dx,y+dy],true); render(); }
+  else if(drag.mode==='rot'){ let a=Math.atan2(m.y-drag.c[1],m.x-drag.c[0])-drag.a0; if(h.type==='handle') a=Math.atan2(m.y-drag.c[1],m.x-drag.c[0])+Math.PI/2-(drag.F0?drag.F0.ang:0); const st=V.rotate.endsWith('15')?15:1; a=Math.round(a/D2R/st)*st*D2R; applyFrom(drag.G,rotF(drag.c[0],drag.c[1],a),true); render(); }
+  else if(drag.mode==='draw'){ let sx,sy,si=-1; if(h.type==='atom'){ sx=M.atoms[h.i].x; sy=M.atoms[h.i].y; si=h.i; } else { sx=drag.sm.x; sy=drag.sm.y; }
+    const end=snapEnd(sx,sy,p.px,p.py,si); drag.pv={kind:'bond',x1:sx,y1:sy,x2:end.x,y2:end.y,end,si}; render(); }
+  else if(drag.mode==='arrow'){ let x2=m.x, y2=m.y; const t=Math.atan2(y2-drag.sm.y,x2-drag.sm.x), r=Math.hypot(x2-drag.sm.x,y2-drag.sm.y), sn=Math.round(t/(Math.PI/12))*(Math.PI/12); x2=drag.sm.x+r*Math.cos(sn); y2=drag.sm.y+r*Math.sin(sn); drag.pv={kind:'arrow',x1:drag.sm.x,y1:drag.sm.y,x2,y2}; render(); }
+  else if(drag.mode==='box'||drag.mode==='marq'){ drag.pv={kind:drag.mode,x1:drag.sm.x,y1:drag.sm.y,x2:m.x,y2:m.y}; render(); }
+  else if(drag.mode==='lasso'){ drag.pts.push(m); drag.pv={kind:'lasso',pts:drag.pts}; render(); }
+  drag.last=p;
+});
+function endPtr(e,cancelled){
+  if(mpan){ mpan=null; return; }
+  if(!ptrs.has(e.pointerId)) return; ptrs.delete(e.pointerId);
+  if(pinch){ if(!ptrs.size) pinch=null; return; }
+  if(!drag) return;
+  const d=drag; drag=null;
+  if(cancelled){ if(d.snap){ const q=JSON.parse(d.snap); M={atoms:q.atoms,bonds:q.bonds,shapes:q.shapes||[]}; topo++; } render(); return; }
+  if(d.mode==='erase'){
+    if(d.E.a.size||d.E.b.size||d.E.s.size){ pushUndo(); deleteItems(d.E.a,d.E.b,d.E.s); changed(); } else render(); return; }
+  if(d.mode==='ring'&&d.pv){ pushUndo(); placeRingPts(d.pv.pts,d.pv.ar); changed(); return; }
+  if(!d.moved){ if(tap(d.hit)) changed(); else render(); return; }
+  if(d.mode==='move'||d.mode==='rot'){ undoS.push(d.snap); redoS.length=0; changed(); return; }
+  if(d.mode==='draw'&&d.pv){
+    pushUndo(); const p=d.pv, el=tool==='atom'?V.atom:'C', o=tool==='multi'?(V.multi==='triple'?3:2):1, s=tool==='bond'&&V.bond!=='single'?V.bond:null;
+    const i=p.si>=0?p.si:atomAt(p.x1,p.y1,'C'), j=p.end.i>=0?p.end.i:atomAt(p.x2,p.y2,el);
+    if(i!==j){ link(i,j,o,s); if(tool==='atom'&&el==='C'){ M.atoms[j].lab=1; if(p.si<0) M.atoms[i].lab=1; } } changed(); return; }
+  if(d.mode==='arrow'&&d.pv&&Math.hypot(d.pv.x2-d.pv.x1,d.pv.y2-d.pv.y1)>.3){ pushUndo(); M.shapes.push({t:'arrow',v:V.arrow,x1:d.pv.x1,y1:d.pv.y1,x2:d.pv.x2,y2:d.pv.y2}); changed(); return; }
+  if(d.mode==='box'&&d.pv&&Math.abs(d.pv.x2-d.pv.x1)>.2&&Math.abs(d.pv.y2-d.pv.y1)>.2){ pushUndo(); M.shapes.push({t:tool==='shape'?'rect':'br',v:V[tool],x1:d.pv.x1,y1:d.pv.y1,x2:d.pv.x2,y2:d.pv.y2}); changed(); return; }
+  if(d.mode==='marq'||d.mode==='lasso'){
+    let inside;
+    if(d.mode==='marq'){ const p=d.pv||{x1:0,x2:0,y1:0,y2:0}, x1=Math.min(p.x1,p.x2), x2=Math.max(p.x1,p.x2), y1=Math.min(p.y1,p.y2), y2=Math.max(p.y1,p.y2); inside=(x,y)=>x>=x1&&x<=x2&&y>=y1&&y<=y2; }
+    else inside=(x,y)=>pointInPoly(x,y,d.pts);
+    const na=new Set(), ns=new Set(); M.atoms.forEach((a,i)=>{ if(inside(a.x,a.y)) na.add(i); });
+    M.shapes.forEach((s,j)=>{ if(shapePts(s).every(q=>inside(q[0],q[1]))) ns.add(j); });
+    sel={atoms:na,shapes:ns}; updateCopy(); render(); return; }
+  render();
+}
+svg.addEventListener('pointerup',e=>endPtr(e,false));
+svg.addEventListener('pointercancel',e=>endPtr(e,true));
+svg.addEventListener('pointerleave',e=>{ if(e.pointerType==='mouse'&&hover){ hover=null; render(); } });
+svg.addEventListener('wheel',e=>{ e.preventDefault(); const p=evPt(e);
+  if(e.ctrlKey||e.metaKey){ zoomAt(p.px,p.py,Math.exp(-e.deltaY*.01)); } else { view.tx-=e.deltaX; view.ty-=e.deltaY; } render(); },{passive:false});
+new ResizeObserver(()=>render()).observe(svg);
+
+/* ---------- 명령 ---------- */
+$('undo').onclick=undo; $('redo').onclick=redo; $('fitBtn').onclick=fit;
+$('lTab').onclick=()=>{ const c=$('lcol'); c.classList.toggle('collapsed'); $('lTab').setAttribute('aria-label',c.classList.contains('collapsed')?'원소 열 펼치기':'원소 열 접기'); };
+document.addEventListener('keydown',e=>{
+  if(e.target.closest&&e.target.closest('textarea,input')) return;
+  const k=e.key.toLowerCase();
+  if((e.ctrlKey||e.metaKey)&&k==='z'){ e.preventDefault(); e.shiftKey?redo():undo(); }
+  else if((e.ctrlKey||e.metaKey)&&k==='y'){ e.preventDefault(); redo(); }
+  else if((e.ctrlKey||e.metaKey)&&k==='a'){ e.preventDefault(); sel=allSet(); updateCopy(); render(); }
+  else if((e.ctrlKey||e.metaKey)&&k==='d'){ e.preventDefault(); duplicateSel(); }
+  else if(e.key==='Delete'||e.key==='Backspace'){ if(!selEmpty()){ deleteSel(); changed(); } else if(hover){ pushUndo(); const E={a:new Set(),b:new Set(),s:new Set()}; hover.type==='atom'?E.a.add(hover.i):hover.type==='bond'?E.b.add(hover.k):E.s.add(hover.j); deleteItems(E.a,E.b,E.s); hover=null; changed(); } }
+  else if(e.key==='Escape'){ if(!$('v3').hidden) close3D(); else if(!$('sheetBg').hidden) closeSheet(); else { clearSel(); render(); } }
+  else if(e.key==='+'||e.key==='='){ const r=svg.getBoundingClientRect(); zoomAt(r.width/2,r.height/2,1.2); render(); }
+  else if(e.key==='-'){ const r=svg.getBoundingClientRect(); zoomAt(r.width/2,r.height/2,1/1.2); render(); }
+});
+
+/* ---------- 시트 ---------- */
+const h=(tag,props,...kids)=>{ const el=document.createElement(tag); if(props) for(const [k,v] of Object.entries(props)){ if(k==='on') for(const [ev,fn] of Object.entries(v)) el.addEventListener(ev,fn); else if(k==='html') el.innerHTML=v; else if(k in el&&k!=='style') el[k]=v; else el.setAttribute(k,v); } for(const c of kids) if(c!=null) el.append(c); return el; };
+function openSheet(title,nodes,focus){ $('sheetTitle').textContent=title; const b=$('sheetBody'); b.innerHTML=''; nodes.forEach(n=>n&&b.append(n)); $('sheetBg').hidden=false; if(focus) setTimeout(()=>{ const f=$(focus); if(f){ f.focus(); f.select&&f.select(); } },40); }
+function closeSheet(){ $('sheetBg').hidden=true; }
+$('sheetClose').onclick=closeSheet;
+$('sheetBg').addEventListener('click',e=>{ if(e.target.id==='sheetBg') closeSheet(); });
+
+function openText(hit){
+  const onAtom=hit.type==='atom', onText=hit.type==='shape'&&M.shapes[hit.j].t==='text';
+  if(hit.type==='bond'||(hit.type==='shape'&&!onText)) return;
+  const cur=onAtom?(M.atoms[hit.i].ab||M.atoms[hit.i].el):onText?M.shapes[hit.j].s:'';
+  const err=h('div',{className:'err'});
+  const inp=h('input',{id:'txtIn',value:cur,autocomplete:'off',autocapitalize:'off',spellcheck:false,placeholder:onAtom?'원소 기호 또는 작용기 (예: N, OMe, COOH)':'글자 입력'});
+  const apply=v=>{
+    v=v.trim();
+    if(onAtom){
+      if(!v) return closeSheet();
+      const el=v.length<=3?v[0].toUpperCase()+v.slice(1).toLowerCase():v;
+      if(ELSET.has(el)){ pushUndo(); const a=M.atoms[hit.i]; a.el=el; a.h=null; delete a.ab; changed(); return closeSheet(); }
+      const g=CUSTOM.map(c=>c.n).find(k=>k===v)||CUSTOM.map(c=>c.n).find(k=>k.toLowerCase()===v.toLowerCase())||Object.keys(GROUPS).find(k=>k.toLowerCase()===v.toLowerCase());
+      if(g){ pushUndo(); attachGroup(hit.i,g,'replace'); changed(); return closeSheet(); }
+      err.textContent='원소 기호나 작용기 이름을 입력하세요. 작용기 목록: '+GROUP_QUICK.join(', ')+' 등'; return;
+    }
+    pushUndo();
+    if(onText){ if(v) M.shapes[hit.j].s=v; else M.shapes.splice(hit.j,1); }
+    else if(v) M.shapes.push({t:'text',x:hit.x,y:hit.y,s:v}); else undoS.pop();
+    changed(); closeSheet();
+  };
+  const form=h('form',{className:'field',on:{submit:e=>{ e.preventDefault(); apply(inp.value); }}},inp,h('button',{className:'btn primary',type:'submit'},'확인'));
+  const chips=onAtom?h('div',{className:'chips'},...['H','C','N','O','S','F','Cl','Br','OMe','OH','NH2','NO2','COOH','CN','Ph','CF3'].map(t=>h('button',{type:'button',on:{click:()=>apply(t)}},t))):null;
+  openSheet(onAtom?'원자 기호 바꾸기':onText?'글자 고치기':'글자 넣기',[form,err,chips,onText?h('p',{className:'note'},'내용을 비우고 확인하면 글자를 지웁니다.'):null],'txtIn');
+}
+function openPeriodic(){
+  let edit=false;
+  const pick=e=>{ V.atom=e; if(!ELCOL.includes(e)){ customEl=e; } buildElCol(); pickTool('atom'); closeSheet(); };
+  const toggle=e=>{ if(ELCOL.includes(e)){ if(ELCOL.length<=1){ err.textContent='원소를 하나 이상 남겨 두세요.'; return; } ELCOL=ELCOL.filter(x=>x!==e); }
+    else { if(ELCOL.length>=14){ err.textContent='빠른 선택에는 14개까지 넣을 수 있습니다.'; return; } ELCOL.push(e); if(customEl===e) customEl=null; }
+    err.textContent=''; saveElCol(); buildElCol(); paint(); };
+  const g=h('div',{className:'g'}), btns=new Map();
+  for(const [e,r,c] of PT){ const b=h('button',{type:'button',title:e,on:{click:()=>edit?toggle(e):pick(e)}},e); b.style.gridRow=r; b.style.gridColumn=c; const t=elTok(e); if(t!=='ink'&&t!=='el-x') b.style.color=`var(--${t})`; g.append(b); btns.set(e,b); }
+  const err=h('div',{className:'err'});
+  const quick=h('div',{className:'chips'});
+  function paint(){
+    btns.forEach((b,e)=>{ const on=edit&&ELCOL.includes(e); b.style.background=on?'var(--accent-soft)':''; b.style.borderColor=on?'var(--accent)':''; });
+    quick.innerHTML='';
+    ELCOL.forEach((e,i)=>{ const x=h('span',{className:'x',role:'button','aria-label':e+' 빼기',title:'빼기'},'×');
+      x.addEventListener('click',ev=>{ ev.stopPropagation(); toggle(e); });
+      const up=h('span',{className:'x',role:'button','aria-label':e+' 위로',title:'위로'},'↑');
+      up.addEventListener('click',ev=>{ ev.stopPropagation(); if(i>0){ [ELCOL[i-1],ELCOL[i]]=[ELCOL[i],ELCOL[i-1]]; saveElCol(); buildElCol(); paint(); } });
+      quick.append(h('button',{type:'button',className:'mine',on:{click:()=>pick(e)}},e,i?up:null,x)); });
+    $('ptPick').setAttribute('aria-pressed',String(!edit)); $('ptEdit').setAttribute('aria-pressed',String(edit));
+  }
+  const seg=h('div',{className:'seg',role:'group','aria-label':'모드'},
+    h('button',{className:'btn',type:'button',id:'ptPick',on:{click:()=>{ edit=false; paint(); }}},'원소 고르기'),
+    h('button',{className:'btn',type:'button',id:'ptEdit',on:{click:()=>{ edit=true; paint(); }}},'빠른 선택 편집'));
+  const inp=h('input',{id:'elIn',placeholder:'원소 기호 직접 입력 (예: Ce, U)',autocomplete:'off',autocapitalize:'off'});
+  const form=h('form',{className:'field',on:{submit:ev=>{ ev.preventDefault(); let v=inp.value.trim(); v=v?v[0].toUpperCase()+v.slice(1).toLowerCase():''; if(!ELSET.has(v)){ err.textContent='없는 원소 기호입니다.'; return; } inp.value=''; edit?toggle(v):pick(v); }}},inp,h('button',{className:'btn primary',type:'submit'},'확인'));
+  openSheet('주기율표',[seg,h('div',{className:'ptab'},g),form,err,h('div',{className:'cap'},'빠른 선택 원소'),quick]);
+  paint();
+}
+let pendingTool=null;
+function saveSelAsGroup(){
+  if(!sel.atoms.size){ toast('먼저 저장할 구조를 선택하세요.'); return; }
+  const cross=M.bonds.map((b,k)=>[b,k]).filter(([b])=>sel.atoms.has(b.a)!==sel.atoms.has(b.b));
+  if(cross.length>1){ toast('선택한 구조가 바깥과 결합 하나로만 이어져야 합니다.',3200); return; }
+  if(cross.length===1){ const [b,k]=cross[0]; openSaveGroup(sel.atoms.has(b.a)?b.a:b.b,k); return; }
+  if(sel.atoms.size===1){ openSaveGroup([...sel.atoms][0],null); return; }
+  pendingTool=tool; tool='pickAttach'; syncPressed(); toast('다른 원자에 붙을 원자를 탭하세요.',3200);
+}
+function openSaveGroup(attach,crossK){
+  const ids=[...sel.atoms].sort((a,b)=>a-b), map=new Map(), sub={atoms:[],bonds:[]};
+  ids.forEach(i=>{ map.set(i,sub.atoms.length); const a=Object.assign({},M.atoms[i]); if(i===attach) a.h=null; sub.atoms.push(a); });
+  M.bonds.forEach(b=>{ if(map.has(b.a)&&map.has(b.b)) sub.bonds.push({a:map.get(b.a),b:map.get(b.b),o:b.o}); });
+  const ex=expandMol(sub), smi=toSmiles(ex,map.get(attach));
+  const f=formula(ex); f.parts=f.parts.map(([e,n])=>[e,e==='H'?n-1:n]).filter(([e,n])=>n>0);
+  const err=h('div',{className:'err'});
+  const inp=h('input',{id:'grpName',placeholder:'기호 (예: Tf, Bz, Cbz)',autocomplete:'off',autocapitalize:'off',spellcheck:false,maxLength:10});
+  const rep=h('label',{className:'chk'},h('input',{type:'checkbox',id:'grpRep',checked:true}),' 그림의 구조도 이 기호로 바꾸기');
+  const form=h('form',{className:'field',on:{submit:e=>{ e.preventDefault(); const n=inp.value.trim();
+    if(!n){ err.textContent='표시할 기호를 입력하세요.'; return; }
+    if(ELSET.has(n)){ err.textContent='원소 기호와 같은 이름은 쓸 수 없습니다.'; return; }
+    CUSTOM=CUSTOM.filter(c=>c.n!==n); CUSTOM.push({n,s:smi}); delete abElCache[n]; saveGroups(); V.group=n;
+    if(rep&&$('grpRep').checked){ pushUndo(); const t=M.atoms[attach]; const rm=new Set(ids.filter(i=>i!==attach)); deleteItems(rm,new Set(),new Set()); t.el='*'; t.ab=n; t.c=0; t.h=0; t.r=0; delete t.lab; changed(); }
+    else { clearSel(); render(); }
+    buildStrip(); closeSheet(); toast(n+' 작용기를 저장했습니다.'); }}},inp,h('button',{className:'btn primary',type:'submit'},'저장'));
+  openSheet('작용기로 저장',[h('dl',{className:'kv',html:`<dt>붙는 원자</dt><dd>${esc(M.atoms[attach].ab||M.atoms[attach].el)}</dd><dt>구성</dt><dd>${fmtFormula(f)}</dd><dt>SMILES</dt><dd>${esc(smi)}</dd>`}),form,err,rep],'grpName');
+}
+function openGroups(){
+  const use=k=>{ V.group=k; pickTool('group'); closeSheet(); };
+  const mine=h('div',{className:'chips'});
+  const drawMine=()=>{ mine.innerHTML='';
+    if(!CUSTOM.length){ mine.append(h('span',{className:'note'},'아직 만든 작용기가 없습니다.')); return; }
+    for(const c of CUSTOM){ let fm=''; try{ fm=formula(expandMol({atoms:[{x:0,y:0,el:'*',ab:c.n,c:0,h:0}],bonds:[]})).parts.map(([e,n])=>e+(n>1?n:'')).join(''); }catch(e){}
+      const del=h('span',{className:'x',role:'button','aria-label':c.n+' 삭제',title:'삭제'},'×');
+      del.addEventListener('click',ev=>{ ev.stopPropagation(); CUSTOM=CUSTOM.filter(g=>g!==c); saveGroups(); drawMine(); buildStrip(); });
+      mine.append(h('button',{type:'button',className:'mine',title:c.s,on:{click:()=>use(c.n)}},c.n,h('small',null,' '+fm),del)); } };
+  drawMine();
+  const err=h('div',{className:'err'}), pv=h('div',{className:'note'});
+  const sym=h('input',{id:'grpSym',placeholder:'기호 (예: Tf)',autocomplete:'off',autocapitalize:'off',spellcheck:false,maxLength:10});
+  const smi=h('input',{id:'grpSmi',placeholder:'SMILES (예: S(=O)(=O)C(F)(F)F)',autocomplete:'off',autocapitalize:'off',spellcheck:false});
+  smi.style.fontFamily='var(--f-mono)';
+  const check=()=>{ err.textContent=''; const s=smi.value.trim(); if(!s){ pv.textContent=''; return null; }
+    try{ const g=parseSmiles(s); const f=formula(g); f.parts=f.parts.map(([e,n])=>[e,e==='H'?Math.max(0,n-1):n]).filter(([e,n])=>n>0); pv.innerHTML='붙었을 때 '+fmtFormula(f)+' · 첫 원자 '+g.atoms[0].el+'가 붙는 자리'; return g; }
+    catch(x){ pv.textContent=''; err.textContent=x.message; return null; } };
+  smi.addEventListener('input',check);
+  const form=h('form',{on:{submit:e=>{ e.preventDefault(); const n=sym.value.trim(), g=check();
+    if(!n){ err.textContent='표시할 기호를 입력하세요.'; return; }
+    if(!g){ if(!err.textContent) err.textContent='SMILES를 입력하세요.'; return; }
+    if(g.atoms.length>200){ err.textContent='작용기가 너무 큽니다 (원자 200개 이하).'; return; }
+    CUSTOM=CUSTOM.filter(c=>c.n!==n); CUSTOM.push({n,s:smi.value.trim()}); saveGroups(); V.group=n; sym.value=''; smi.value=''; pv.textContent=''; drawMine(); buildStrip(); toast(n+' 작용기를 추가했습니다.'); }}},
+    h('div',{className:'field'},sym), h('div',{className:'field',style:'margin-top:6px'},smi,h('button',{className:'btn primary',type:'submit'},'추가')));
+  const drawNew=h('button',{className:'btn primary',type:'button',on:{click:()=>{ closeSheet(); if(sel.atoms.size){ saveSelAsGroup(); return; } pickTool('select'); toast('저장할 구조를 그린 뒤 선택하고, 오른쪽의 작용기 저장 버튼을 누르세요.',4000); }}},'그린 구조로 만들기');
+  const fromSel=h('button',{className:'btn',type:'button'},'선택한 구조를 SMILES로 채우기');
+  fromSel.onclick=()=>{ if(selEmpty()||!sel.atoms.size){ err.textContent='먼저 캔버스에서 구조를 선택하세요. 붙는 원자를 첫 원자로 쓰려면 SMILES에서 맨 앞으로 옮기세요.'; return; }
+    const sub={atoms:[],bonds:[]}, map=new Map(); [...sel.atoms].sort((a,b)=>a-b).forEach(i=>{ map.set(i,sub.atoms.length); sub.atoms.push(Object.assign({},M.atoms[i])); });
+    M.bonds.forEach(b=>{ if(map.has(b.a)&&map.has(b.b)) sub.bonds.push({a:map.get(b.a),b:map.get(b.b),o:b.o}); });
+    smi.value=toSmiles(expandMol(sub)); check(); };
+  openSheet('작용기',[
+    h('div',{className:'cap'},'내 작용기'),mine,
+    h('div',{className:'cap'},'새 작용기 만들기'),h('div',{className:'acts'},drawNew),h('div',{className:'cap'},'또는 SMILES로 입력'),form,pv,err,
+    h('p',{className:'note'},'캔버스에는 기호로 표시되고, 3D·분자식·SMILES에서는 실제 원자로 펼쳐집니다. SMILES의 첫 원자가 다른 원자에 붙는 자리입니다.'),
+    h('div',{className:'acts'},fromSel),
+    h('div',{className:'cap'},'기본 작용기'),
+    h('div',{className:'chips'},...Object.keys(GROUPS).map(k=>h('button',{type:'button',title:GROUPS[k],on:{click:()=>use(k)}},k)))]);
+}
+function openTemplates(){
+  const nodes=[];
+  for(const [cat,items] of TEMPLATES){ nodes.push(h('div',{className:'cap'},cat)); nodes.push(h('div',{className:'chips'},...items.map(([nm,s])=>h('button',{type:'button',on:{click:()=>{ const r=svg.getBoundingClientRect(), c=toModel(r.width/2,r.height*.42); pushUndo(); insertMol(parseSmiles(s),c.x,c.y); if(tool!=='select'&&tool!=='hand') pickTool('hand'); changed(); closeSheet(); toast(nm+'을(를) 넣었습니다. 끌어서 옮기세요.'); }}},nm)))); }
+  openSheet('구조 라이브러리',nodes);
+}
+$('tplBtn').onclick=openTemplates;
+const EXAMPLES=[['벤젠','c1ccccc1'],['아스피린','CC(=O)Oc1ccccc1C(=O)O'],['카페인','Cn1cnc2c1c(=O)n(C)c(=O)n2C'],['크로코네이트','[O-]C1=C([O-])C(=O)C(=O)C1=O'],['아다만테인','C1C2CC3CC1CC(C2)C3']];
+function importSmi(str,append,err){
+  let m; try{ m=parseSmiles(str); }catch(x){ err.textContent=x.message; return false; }
+  if(m.atoms.length>1500){ err.textContent='원자가 너무 많습니다 (최대 1500개).'; return false; }
+  pushUndo();
+  if(!append){ M={atoms:[],bonds:[],shapes:[]}; clearSel(); insertMol(m,0,0); clearSel(); changed(); fit(); }
+  else { const b=setBBox(allSet(),0); insertMol(m,b?b.x2+3:0,b?b.cy:0); changed(); fit(); }
+  closeSheet(); toast(m.warn||(append?'구조를 추가했습니다.':'구조를 불러왔습니다.'),m.warn?4000:2000); return true;
+}
+function openSmiles(){
+  const err=h('div',{className:'err'});
+  const ta=h('textarea',{className:'code',id:'smi',spellcheck:false,autocapitalize:'off',autocomplete:'off'}); ta.value=toSmiles(expandMol(M));
+  const copyBtn=h('button',{className:'btn',type:'button'},'복사');
+  copyBtn.onclick=()=>{ try{ navigator.clipboard.writeText(ta.value).then(()=>{ copyBtn.textContent='복사됨'; setTimeout(()=>copyBtn.textContent='복사',1500); },()=>{ ta.select(); err.textContent='자동 복사가 막혀 있어 텍스트를 선택해 두었습니다.'; }); }catch(x){ ta.select(); } };
+  const stereo=M.bonds.some(b=>b.s==='w'||b.s==='h')?h('p',{className:'note'},'쐐기 결합의 입체 정보는 SMILES에 들어가지 않습니다.'):null;
+  openSheet('SMILES',[ta,err,stereo,h('div',{className:'acts'},h('button',{className:'btn primary',type:'button',on:{click:()=>importSmi(ta.value,false,err)}},'구조 불러오기'),h('button',{className:'btn',type:'button',on:{click:()=>importSmi(ta.value,true,err)}},'현재 그림에 추가'),copyBtn),
+    h('div',{className:'cap'},'예시'),h('div',{className:'chips'},...EXAMPLES.map(([n,s])=>h('button',{type:'button',on:{click:()=>{ ta.value=s; importSmi(s,false,err); }}},n)))]);
+}
+document.addEventListener('paste',e=>{
+  if(e.target.closest&&e.target.closest('textarea,input')) return;
+  const t=(e.clipboardData||window.clipboardData).getData('text'); if(!t) return; e.preventDefault();
+  const err=h('div'); if(!importSmi(t,false,err)) toast('붙여넣은 내용을 SMILES로 읽지 못했습니다: '+err.textContent,4000);
+});
+function openInfo(){
+  if(!M.atoms.length){ toast('먼저 구조를 그리세요.'); return; }
+  const EM=expandMol(M), f=formula(EM), cnt=Object.fromEntries(f.parts);
+  const comps=new Set(); { const ad=adjOf(EM), seen=new Set(); EM.atoms.forEach((_,i)=>{ if(seen.has(i)) return; comps.add(i); const q=[i]; seen.add(i); for(let x=0;x<q.length;x++) for(const k of ad[q[x]]){ const j=other(EM.bonds[k],q[x]); if(!seen.has(j)){ seen.add(j); q.push(j); } } }); }
+  const rings=EM.bonds.length-EM.atoms.length+comps.size;
+  const X=(cnt.F||0)+(cnt.Cl||0)+(cnt.Br||0)+(cnt.I||0);
+  const dbe=1+(cnt.C||0)+(cnt.Si||0)-((cnt.H||0)+X)/2+((cnt.N||0)+(cnt.P||0))/2;
+  const dl=h('dl',{className:'kv',html:`<dt>분자식</dt><dd>${fmtFormula(f)}</dd><dt>분자량</dt><dd>${f.unknown?'—':f.mw.toFixed(3)+' g/mol'}</dd><dt>정확 질량</dt><dd>${f.unknown?'—':f.mono.toFixed(5)}</dd>
+    <dt>원자 / 결합</dt><dd>${EM.atoms.length} / ${EM.bonds.length}</dd><dt>고리 수</dt><dd>${rings}</dd><dt>불포화도</dt><dd>${comps.size===1&&!f.unknown&&!f.chg?dbe:'—'}</dd><dt>조각 수</dt><dd>${comps.size}</dd>`});
+  let tb='<tr><th>원소</th><th>개수</th><th>질량 %</th></tr>';
+  if(!f.unknown) for(const [e,n] of f.parts){ tb+=`<tr><td>${e}</td><td>${n}</td><td>${(MASS[e][0]*n/f.mw*100).toFixed(2)}</td></tr>`; }
+  openSheet('분자 정보',[dl,h('div',{className:'cap'},'원소 분석'),h('table',{className:'tbl',html:tb})]);
+}
+// box: {x1,y1,x2,y2} 모델 좌표. 없으면 전체
+function exportSVG(box){
+  const P=t=>PAL_LIGHT[t]||'#1b1f24';
+  const {S,B}=build(P,"Helvetica, Arial, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif");
+  const b=box||setBBox(allSet(),.7); if(!b) return null;
+  const sc=60, w=Math.ceil((b.x2-b.x1)*sc), hh=Math.ceil((b.y2-b.y1)*sc);
+  return {w,h:hh,svg:`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${hh}" viewBox="${f3(b.x1)} ${f3(b.y1)} ${f3(b.x2-b.x1)} ${f3(b.y2-b.y1)}"><rect x="${f3(b.x1)}" y="${f3(b.y1)}" width="${f3(b.x2-b.x1)}" height="${f3(b.y2-b.y1)}" fill="#ffffff"/>${S}${B}</svg>`};
+}
+let DL=null; try{ if(window.claude&&claude.use) claude.use('downloads').then(d=>{ DL=d; }).catch(()=>{}); }catch(e){}
+function fileBase(){ const t=($('docTitle').value||'').trim().replace(/[\\/:*?"<>|]+/g,' ').trim(); return t||'구조식'; }
+async function saveFile(name,data,btn){
+  btn.disabled=true;
+  try{
+    if(DL){ // claude.ai 안에서 열렸을 때
+      try{ const r=await DL.save({filename:name,data}); if(r&&r.status==='saved') toast(name+' 저장했습니다.'); }
+      catch(x){ const c=x&&x.code; if(c==='declined'){} else if(c==='rate_limited') toast('저장 창이 이미 열려 있습니다. 잠시 후 다시 누르세요.'); else toast('저장하지 못했습니다.'+(x&&x.message?' ('+x.message+')':''),3200); }
+      return; }
+    // 일반 브라우저: iPad·iPhone은 공유 시트(파일에 저장·이미지 저장), 그 밖에는 내려받기
+    const type=name.endsWith('.png')?'image/png':'image/svg+xml';
+    const blob=data instanceof Blob?data:new Blob([data],{type});
+    let file=null; try{ file=new File([blob],name,{type}); }catch(e){}
+    const touch=matchMedia('(pointer: coarse)').matches;
+    if(touch&&file&&navigator.canShare&&navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file]}); return; }catch(x){ if(x&&x.name==='AbortError') return; } }
+    const url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),5000); toast(name+' 저장했습니다.');
+  }catch(x){ toast('저장하지 못했습니다.',3200); }
+  finally{ btn.disabled=false; }
+}
+function openImage(){
+  if(!M.atoms.length&&!M.shapes.length){ toast('내보낼 그림이 없습니다.'); return; }
+  const hasSel=!selEmpty(); let mode=hasSel?'sel':'all', ex=null, pngBlob=null;
+  const img=h('img',{alt:'구조식 이미지'}), wrap=h('div',{className:'imgwrap'},img), note=h('p',{className:'note'});
+  const pngBtn=h('button',{className:'btn primary',type:'button'},'PNG 저장'), svgBtn=h('button',{className:'btn',type:'button'},'SVG 저장');
+  const seg=hasSel?h('div',{className:'seg',role:'group','aria-label':'범위'},
+    h('button',{className:'btn',type:'button',id:'imgSel',on:{click:()=>{ mode='sel'; make(); }}},'선택 상자 안'),
+    h('button',{className:'btn',type:'button',id:'imgAll',on:{click:()=>{ mode='all'; make(); }}},'전체')):null;
+  function make(){
+    if(seg){ $('imgSel').setAttribute('aria-pressed',String(mode==='sel')); $('imgAll').setAttribute('aria-pressed',String(mode==='all')); }
+    const F=mode==='sel'?selFrame():null;
+    ex=exportSVG(F?{x1:F.cx-F.w/2,x2:F.cx+F.w/2,y1:F.cy-F.h/2,y2:F.cy+F.h/2}:null); pngBlob=null; pngBtn.disabled=true;
+    if(!ex){ note.textContent='내보낼 그림이 없습니다.'; return; }
+    note.textContent='이미지를 만드는 중…';
+    const im=new Image(); im.onload=()=>{ const k=Math.min(3,4000/Math.max(ex.w,ex.h)), c=document.createElement('canvas'); c.width=Math.round(ex.w*k); c.height=Math.round(ex.h*k);
+      const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(im,0,0,c.width,c.height);
+      try{ img.src=c.toDataURL('image/png'); c.toBlob(bl=>{ pngBlob=bl; pngBtn.disabled=!bl; },'image/png'); note.textContent=`${c.width} × ${c.height} px`; }
+      catch(x){ img.src=im.src; note.textContent='PNG를 만들지 못했습니다.'; } };
+    im.onerror=()=>{ note.textContent='이미지를 만들지 못했습니다.'; };
+    im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(ex.svg);
+  }
+  pngBtn.onclick=()=>{ if(pngBlob) saveFile(fileBase()+'.png',pngBlob,pngBtn); };
+  svgBtn.onclick=()=>{ if(ex) saveFile(fileBase()+'.svg',ex.svg,svgBtn); };
+  openSheet('이미지로 내보내기',[seg,wrap,note,h('div',{className:'acts'},pngBtn,svgBtn)]);
+  make();
+}
+let clearArm=0;
+function openFile(){
+  const clr=h('button',{className:'warn',type:'button'},'모두 지우기',h('small',null,'원자·도형 전부'));
+  clr.onclick=()=>{ if(Date.now()-clearArm<4000){ pushUndo(); M={atoms:[],bonds:[],shapes:[]}; clearSel(); changed(); closeSheet(); toast('모두 지웠습니다. ↶로 되돌릴 수 있습니다.'); clearArm=0; return; } clearArm=Date.now(); clr.firstChild.textContent='한 번 더 누르면 모두 지웁니다'; };
+  openSheet('파일',[h('div',{className:'list'},
+    h('button',{type:'button',on:{click:openSmiles}},'SMILES 불러오기·내보내기',h('small',null,'붙여넣기도 됩니다')),
+    h('button',{type:'button',on:{click:openImage}},'이미지로 내보내기',h('small',null,'PNG · SVG')),
+    h('button',{type:'button',on:{click:openTemplates}},'구조 라이브러리',h('small',null,'고리·아미노산·의약품')),
+    clr),
+    h('div',{className:'cap'},'조작 방법'),
+    h('ul',{className:'help',html:'<li>화면 이동·확대: 두 손가락으로 끌기·벌리기 (마우스는 휠, Ctrl+휠, 오른쪽 버튼 끌기)</li><li>지우개: 한 손가락으로 문질러 여러 개를 한 번에 지웁니다</li><li>선택: 끌어서 영역 선택 → 끌어서 이동, 손잡이로 회전, 오른쪽 복제 버튼으로 복사</li><li>결합 도구로 기존 결합을 탭하면 단일→이중→삼중으로 바뀌고, 쐐기 결합은 다시 탭하면 방향이 바뀝니다</li><li>단축키: Ctrl+Z/Shift+Z, Ctrl+A, Ctrl+D, Delete</li>'})]);
+}
+$('fileBtn').onclick=openFile;
+
+/* ---------- 3D ---------- */
+const V3={r:null,scene:null,cam:null,grp:null,raf:0,spin:true,withH:true,style:'bs',ptr:new Map(),dist:20,pinch:null,geo:{},mats:{}};
+const CPK={H:0xf1f3f5,C:0x50565f,N:0x3159e0,O:0xe0352f,S:0xe3c12c,P:0xf08a1c,F:0x4cc65a,Cl:0x34b04a,Br:0xa8432e,I:0x7d2bb0,B:0xf3a6a0,Si:0xc9a77a,Se:0xf0a020,Na:0xab5cf2,K:0x8f40d4};
+const VDW={H:1.2,C:1.7,N:1.55,O:1.52,F:1.47,P:1.8,S:1.8,Cl:1.75,Br:1.85,I:1.98,B:1.92,Si:2.1,Se:1.9,Na:2.27,K:2.75};
+const isDark=()=>false;
+function open3D(){
+  if(!M.atoms.length){ toast('먼저 구조를 그리거나 불러오세요.'); return; }
+  if(!window.THREE){ toast('3D 라이브러리를 불러오지 못했습니다. 네트워크를 확인하세요.',4000); return; }
+  $('v3').hidden=false; V3.withH=M.atoms.length<=200; syncV3(); requestAnimationFrame(()=>{ build3D(); loop(); });
+}
+function syncV3(){ $('v3H').setAttribute('aria-pressed',String(V3.withH)); $('v3H').textContent=V3.withH?'수소 표시':'수소 숨김'; $('v3Spin').setAttribute('aria-pressed',String(V3.spin)); for(const [id,s] of [['v3bs','bs'],['v3line','line'],['v3sf','sf']]) $(id).setAttribute('aria-pressed',String(V3.style===s)); }
+function close3D(){ $('v3').hidden=true; cancelAnimationFrame(V3.raf); V3.raf=0; }
+function init3D(){
+  const c=$('c3'); V3.r=new THREE.WebGLRenderer({canvas:c,antialias:true}); V3.r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+  V3.scene=new THREE.Scene(); V3.cam=new THREE.PerspectiveCamera(38,1,.1,3000);
+  V3.scene.add(new THREE.HemisphereLight(0xffffff,0x56606b,.85)); const dl=new THREE.DirectionalLight(0xffffff,.62); dl.position.set(5,8,10); V3.scene.add(dl);
+  V3.grp=new THREE.Group(); V3.scene.add(V3.grp);
+  V3.geo={sph:new THREE.SphereGeometry(1,24,16),sphLo:new THREE.SphereGeometry(1,12,8),cyl:new THREE.CylinderGeometry(1,1,1,14,1,true),cylLo:new THREE.CylinderGeometry(1,1,1,7,1,true)};
+  c.addEventListener('pointerdown',e=>{ try{ c.setPointerCapture(e.pointerId); }catch(_){} V3.ptr.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(V3.ptr.size===2){ const [a,b]=[...V3.ptr.values()]; V3.pinch=Math.hypot(a.x-b.x,a.y-b.y); } });
+  c.addEventListener('pointermove',e=>{ const p=V3.ptr.get(e.pointerId); if(!p) return;
+    if(V3.ptr.size>=2){ V3.ptr.set(e.pointerId,{x:e.clientX,y:e.clientY}); const [a,b]=[...V3.ptr.values()], d=Math.hypot(a.x-b.x,a.y-b.y); if(V3.pinch) V3.dist=Math.max(2,Math.min(900,V3.dist*V3.pinch/d)); V3.pinch=d; return; }
+    const dx=e.clientX-p.x, dy=e.clientY-p.y; V3.ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    const q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),dx*.01); q.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),dy*.01)); V3.grp.quaternion.premultiply(q); });
+  const up=e=>{ V3.ptr.delete(e.pointerId); if(V3.ptr.size<2) V3.pinch=null; };
+  c.addEventListener('pointerup',up); c.addEventListener('pointercancel',up);
+  c.addEventListener('wheel',e=>{ e.preventDefault(); V3.dist=Math.max(2,Math.min(900,V3.dist*Math.exp(e.deltaY*.0012))); },{passive:false});
+}
+const mat=hex=>V3.mats[hex]||(V3.mats[hex]=new THREE.MeshPhongMaterial({color:hex,shininess:14,specular:0x151515}));
+function build3D(){
+  if(!V3.r) init3D(); V3.grp.clear(); V3.grp.quaternion.identity();
+  const {X,els,bonds}=embed3D(expandMol(M),V3.withH), n=els.length, big=n>300, sph=big?V3.geo.sphLo:V3.geo.sph, cyl=big?V3.geo.cylLo:V3.geo.cyl, dark=isDark();
+  const col=e=>e==='C'?0x9aa1ab:(CPK[e]||0xc07ad8), P=i=>new THREE.Vector3(X[i*3],X[i*3+1],X[i*3+2]); let rad=0;
+  const LW=.045;
+  for(let i=0;i<n;i++){ const r=V3.style==='bs'?(VDW[els[i]]||1.8)*.22:V3.style==='sf'?(VDW[els[i]]||1.8):LW; const m=new THREE.Mesh(sph,mat(col(els[i]))); m.scale.setScalar(r); m.position.copy(P(i)); V3.grp.add(m); rad=Math.max(rad,P(i).length()+r); }
+  if(V3.style!=='sf'){ const line=V3.style==='line';
+    const adj=els.map(()=>[]); bonds.forEach(b=>{ adj[b.a].push(b.b); adj[b.b].push(b.a); }); const up=new THREE.Vector3(0,1,0);
+    for(const b of bonds){ const A=P(b.a), Bv=P(b.b), dir=Bv.clone().sub(A), len=dir.length(); dir.normalize();
+      let perp=null; const ref=adj[b.a].find(j=>j!==b.b)??adj[b.b].find(j=>j!==b.a);
+      if(ref!=null){ const v=P(ref).sub(A); perp=v.sub(dir.clone().multiplyScalar(v.dot(dir))); }
+      if(!perp||perp.length()<1e-3){ perp=new THREE.Vector3(1,0,0).cross(dir); if(perp.length()<.1) perp=new THREE.Vector3(0,1,0).cross(dir); }
+      perp.normalize(); const offs=b.o===2?[-.1,.1]:b.o===3?[-.15,0,.15]:[0], rr=line?(b.o===1?LW:.035):(b.o===1?.1:b.o===2?.065:.05), q=new THREE.Quaternion().setFromUnitVectors(up,dir);
+      for(const o of offs){ const base=A.clone().add(perp.clone().multiplyScalar(o));
+        for(const half of [0,1]){ const m=new THREE.Mesh(cyl,mat(col(els[half?b.b:b.a]))); m.scale.set(rr,len/2,rr); m.quaternion.copy(q); m.position.copy(base.clone().add(dir.clone().multiplyScalar(len*(half?.75:.25)))); V3.grp.add(m); } } }
+  }
+  V3.r.setClearColor(0x000000);
+  V3.dist=Math.max(6,rad*2.9); resize3D();
+}
+function resize3D(){ const c=$('c3'), w=c.clientWidth, hh=c.clientHeight; if(!w||!hh) return; V3.r.setSize(w,hh,false); V3.cam.aspect=w/hh; V3.cam.updateProjectionMatrix(); }
+function loop(){ cancelAnimationFrame(V3.raf); if(matchMedia('(prefers-reduced-motion: reduce)').matches){ V3.spin=false; syncV3(); }
+  const tick=()=>{ if($('v3').hidden) return; if(V3.spin&&!V3.ptr.size) V3.grp.rotateOnWorldAxis(new THREE.Vector3(0,1,0),.005); V3.cam.position.set(0,0,V3.dist); V3.cam.lookAt(0,0,0); V3.r.render(V3.scene,V3.cam); V3.raf=requestAnimationFrame(tick); }; tick(); }
+window.addEventListener('resize',()=>{ if(!$('v3').hidden&&V3.r) resize3D(); });
+$('v3Close').onclick=close3D;
+$('v3Spin').onclick=()=>{ V3.spin=!V3.spin; syncV3(); };
+$('v3H').onclick=()=>{ V3.withH=!V3.withH; syncV3(); build3D(); };
+for(const [id,s] of [['v3bs','bs'],['v3line','line'],['v3sf','sf']]) $(id).onclick=()=>{ V3.style=s; syncV3(); build3D(); };
+
+/* ---------- 제목 ---------- */
+{ const t=$('docTitle'); try{ t.value=localStorage.getItem('moldraw.title')||''; }catch(e){}
+  t.addEventListener('input',()=>{ try{ localStorage.setItem('moldraw.title',t.value); }catch(e){} });
+  t.addEventListener('keydown',e=>{ if(e.key==='Enter') t.blur(); }); }
+/* ---------- 시작 ---------- */
+buildUI();
+load();
+tool='bond'; strip='bond'; buildStrip(); syncPressed();
+topo++; updateInfo(); $('undo').disabled=true; $('redo').disabled=true; updateCopy();
+requestAnimationFrame(fit);
+window.__md={exportSVG,get M(){return M;},get view(){return view;},pickTool,get sel(){return sel;}};
+})();
+
+</script>
+
+<script>if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
+</body>
+</html>
