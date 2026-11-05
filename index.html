@@ -124,6 +124,7 @@ svg.i{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.5;stro
 .btn{height:38px;padding:0 13px;border:1px solid var(--line);background:var(--panel-2);border-radius:8px;cursor:pointer;font-size:13.5px}
 .btn:hover{border-color:var(--accent)}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:500}
+.btn.lnk{display:inline-flex;align-items:center;text-decoration:none;color:inherit;width:max-content}
 .btn.warn{color:var(--danger);border-color:var(--danger)}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chips button{border:1px solid var(--line);background:var(--panel-2);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
@@ -2089,7 +2090,9 @@ function openSearch(){
   }
   form.addEventListener('submit',e=>{ e.preventDefault(); inp.blur(); run(); });
   draw();
-  openSheet('PubChem 검색',[form,msg,list,sugBox,h('p',{className:'note'},'결과를 누르면 현재 그림에 추가됩니다. 구조는 PubChem 데이터베이스의 SMILES를 그대로 가져옵니다.')],'pcq');
+  const sOut=h('div'); let sBtn=null;
+  if(M.atoms.length){ const ss=selSub(); sBtn=h('button',{className:'btn',type:'button',on:{click:()=>{ sOut.innerHTML=''; sOut.append(pcStructBlock(ss?ss.sub:M)); }}},ss?'선택한 구조로 검색':'그린 구조로 검색'); }
+  openSheet('PubChem 검색',[form,msg,list,sugBox,h('p',{className:'note'},'결과를 누르면 현재 그림에 추가됩니다. 구조는 PubChem 데이터베이스의 SMILES를 그대로 가져옵니다.'),sBtn?h('div',{className:'cap'},'구조로 찾기'):null,sBtn?h('div',{className:'acts'},sBtn):null,sOut],sBtn&&sel.atoms.size?null:'pcq');
 }
 $('tplBtn').onclick=openSearch;
 function zoomBtn(f){ const r=svg.getBoundingClientRect(); zoomAt(r.width/2,r.height/2,f); render(); }
@@ -2129,9 +2132,32 @@ document.addEventListener('paste',e=>{
   const t=(e.clipboardData||window.clipboardData).getData('text'); if(!t) return; e.preventDefault();
   const err=h('div'); if(!importSmi(t,false,err)) toast('붙여넣은 내용을 SMILES로 읽지 못했습니다: '+err.textContent,4000);
 });
+/* 선택한 원자만 떼어 낸 분자. 선택 경계에서 끊긴 결합 자리는 수소로 채워진다 (원자가 기본값) */
+function selSub(){ if(!sel.atoms.size) return null; const sub={atoms:[],bonds:[],shapes:[]}, map=new Map(); let cut=0;
+  [...sel.atoms].sort((a,b)=>a-b).forEach(i=>{ map.set(i,sub.atoms.length); const a=Object.assign({},M.atoms[i]); sub.atoms.push(a); });
+  M.bonds.forEach(b=>{ const ia=map.has(b.a), ib=map.has(b.b); if(ia&&ib) sub.bonds.push({a:map.get(b.a),b:map.get(b.b),o:b.o}); else if(ia||ib) cut++; });
+  return {sub,cut}; }
+/* PubChem에서 같은 연결 구조의 화합물 찾기 (SMILES 그대로 조회) */
+function pcStructBlock(m){
+  const box=h('div',{style:'display:flex;flex-direction:column;gap:8px'}), msg=h('p',{className:'note'},'PubChem에서 같은 구조를 찾는 중…'); box.append(msg);
+  let smi=''; try{ smi=toSmiles(expandMol(m)); }catch(e){}
+  if(!smi||/\*/.test(smi)){ msg.className='err'; msg.textContent='이 구조는 SMILES로 바꿀 수 없어 검색할 수 없습니다.'; return box; }
+  if(smi.includes('.')){ msg.className='err'; msg.textContent='떨어진 조각이 여러 개입니다. 한 분자만 선택해서 검색하세요.'; return box; }
+  (async()=>{ const props='Title,IUPACName,MolecularFormula,MolecularWeight'; let j;
+    try{ try{ j=await pcGet(PC+'/pug/compound/smiles/property/'+props+'/JSON?smiles='+encodeURIComponent(smi)); }
+      catch(e){ if(e.status!==400) throw e; j=await pcGet(PC+'/pug/compound/smiles/'+encodeURIComponent(smi)+'/property/'+props+'/JSON'); }
+      const q=j&&j.PropertyTable&&j.PropertyTable.Properties&&j.PropertyTable.Properties[0];
+      if(!q||!q.CID){ msg.textContent='PubChem에 같은 구조의 화합물이 없습니다.'; return; }
+      msg.remove();
+      box.append(h('dl',{className:'kv',html:`<dt>이름</dt><dd>${esc(q.Title||'—')}</dd><dt>IUPAC 이름</dt><dd>${esc(q.IUPACName||'—')}</dd><dt>분자식</dt><dd>${fmtF(q.MolecularFormula||'')}</dd><dt>분자량</dt><dd>${q.MolecularWeight?(+q.MolecularWeight).toFixed(3)+' g/mol':'—'}</dd><dt>CID</dt><dd>${q.CID}</dd>`}),
+        h('a',{className:'btn lnk',href:'https://pubchem.ncbi.nlm.nih.gov/compound/'+q.CID,target:'_blank',rel:'noopener'},'PubChem에서 보기'),
+        h('p',{className:'note'},'입체 정보(쐐기)는 빼고 연결 구조로 찾습니다. 입체 이성질체가 있으면 대표 화합물이 나옵니다.'));
+    }catch(e){ msg.className='err'; msg.textContent=!navigator.onLine?'인터넷에 연결되어 있지 않습니다. 연결 후 다시 시도하세요.':e.status===503?'PubChem이 요청을 잠시 제한하고 있습니다. 몇 초 뒤 다시 시도하세요.':'PubChem에 연결하지 못했습니다. 잠시 후 다시 시도하세요.'; } })();
+  return box; }
 function openInfo(){
   if(!M.atoms.length){ toast('먼저 구조를 그리세요.'); return; }
-  const EM=expandMol(M), f=formula(EM), cnt=Object.fromEntries(f.parts);
+  const ss=selSub(), SRC=ss?ss.sub:M;
+  const EM=expandMol(SRC), f=formula(EM), cnt=Object.fromEntries(f.parts);
   const comps=new Set(); { const ad=adjOf(EM), seen=new Set(); EM.atoms.forEach((_,i)=>{ if(seen.has(i)) return; comps.add(i); const q=[i]; seen.add(i); for(let x=0;x<q.length;x++) for(const k of ad[q[x]]){ const j=other(EM.bonds[k],q[x]); if(!seen.has(j)){ seen.add(j); q.push(j); } } }); }
   const rings=EM.bonds.length-EM.atoms.length+comps.size;
   const X=(cnt.F||0)+(cnt.Cl||0)+(cnt.Br||0)+(cnt.I||0);
@@ -2140,7 +2166,10 @@ function openInfo(){
     <dt>원자 / 결합</dt><dd>${EM.atoms.length} / ${EM.bonds.length}</dd><dt>고리 수</dt><dd>${rings}</dd><dt>불포화도</dt><dd>${comps.size===1&&!f.unknown&&!f.chg?dbe:'—'}</dd><dt>조각 수</dt><dd>${comps.size}</dd>`});
   let tb='<tr><th>원소</th><th>개수</th><th>질량 %</th></tr>';
   if(!f.unknown) for(const [e,n] of f.parts){ tb+=`<tr><td>${e}</td><td>${n}</td><td>${(MASS[e][0]*n/f.mw*100).toFixed(2)}</td></tr>`; }
-  openSheet('분자 정보',[dl,h('div',{className:'cap'},'원소 분석'),h('table',{className:'tbl',html:tb})]);
+  const out=h('div');
+  const find=h('button',{className:'btn',type:'button',on:{click:()=>{ find.remove(); out.append(pcStructBlock(SRC)); }}},'PubChem에서 이 구조 찾기');
+  openSheet(ss?'선택한 구조 정보':'분자 정보',[ss?h('p',{className:'note'},'선택한 원자 '+sel.atoms.size+'개만 계산합니다.'+(ss.cut?' 선택 밖과 이어진 결합 '+ss.cut+'개 자리는 수소로 채웠습니다.':'')):null,
+    dl,h('div',{className:'cap'},'원소 분석'),h('table',{className:'tbl',html:tb}),h('div',{className:'cap'},'PubChem'),h('div',{className:'acts'},find),out]);
 }
 // box: {x1,y1,x2,y2} 모델 좌표. 없으면 전체
 function exportSVG(box){
