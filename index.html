@@ -1549,7 +1549,7 @@ const HINTS={
   ring:'누른 채로 손가락을 돌리면 고리 방향을 미리 보며 고를 수 있습니다. 결합 위에서는 붙일 쪽을 고릅니다.'
 };
 const ROW1=[['bond','결합','single',true],['multi','다중결합','double',true],['ring','고리','r6',true],['text','텍스트','text'],['arrow','화살표','fwd',true],['shape','도형','rect',true],['bracket','괄호','sq',true]];
-const ROW2=[['charge','전하·라디칼','plus',true],['color','색','color',true],['flip','뒤집기','align',true],['rotate','회전','rotate',true],['3d','3D 보기',null],['info','분자 정보','info'],['more','더보기','more',true]];
+const ROW2=[['charge','전하·라디칼','plus',true],['color','색','color',true],['flip','뒤집기','align',true],['rotate','회전','rotate',true],['3d','3D 보기',null],['info','분자 정보','info'],['smiles','SMILES','smiles']];
 const RCOL=[[['hand','이동','hand'],['select','선택','select',true],['erase','지우개','erase'],['copy','선택 영역 복제','copy']],[['group','작용기','group',true],['saveGrp','선택한 구조를 작용기로 저장','saveGrp']],[['camera','이미지로 내보내기','camera']]];
 
 function mkTB(id,label,icon,hasVar,extra){
@@ -1587,7 +1587,7 @@ function pickTool(id){
   if(id==='camera'){ openImage(); return; }
   if(id==='copy'){ duplicateSel(); return; }
   if(id==='saveGrp'){ saveSelAsGroup(); return; }
-  if(id==='more'){ strip=strip==='more'?tool:'more'; buildStrip(); syncPressed(); return; }
+  if(id==='smiles'){ openSmiles(); return; }
   if(id==='erase'&&!selEmpty()){ deleteSel(); changed(); toast('선택한 항목을 지웠습니다.'); }
   if(DRAW_TOOLS.has(id)&&!selEmpty()){ keptSel=id==='group'?selCopy():null; clearSel(); render(); }
   tool=id; strip=id; buildStrip(); syncPressed(); render();
@@ -1595,13 +1595,6 @@ function pickTool(id){
 function buildStrip(){
   const r=$('vrow'); r.innerHTML=''; r.hidden=false;
   const key=strip;
-  if(key==='more'){
-    const acts=[['clean','구조 정리',()=>{ if(!M.atoms.length) return; pushUndo(); layoutL(M); changed(); fit(); toast('구조를 다시 배치했습니다.'); }],
-      ['all','전체 선택',()=>{ sel=allSet(); if(tool!=='select'&&tool!=='hand'){ tool='select'; } strip='more'; syncPressed(); updateCopy(); render(); }],
-      ['smiles','SMILES',openSmiles],['fit','화면 맞춤',fit]];
-    for(const [icn,label,fn] of acts){ const b=document.createElement('button'); b.className='act'; b.innerHTML=ic(I[icn])+label; b.onclick=fn; r.append(b); }
-    return;
-  }
   if(key==='color'){
     for(const [tok,label] of COLORS){ const b=document.createElement('button'); b.className='tb'; b.setAttribute('aria-label',label); b.title=label; b.setAttribute('aria-pressed',String(V.color===tok));
       b.innerHTML=`<span class="sw" style="background:var(--${tok})"></span>`; b.onclick=()=>{ V.color=tok; if(!selEmpty()) paintSet(sel,tok); buildStrip(); }; r.append(b); }
@@ -1625,6 +1618,8 @@ function buildStrip(){
     if(txt) b.style.width='52px';
     b.onclick=()=>{ V[key]=v; if((key==='rotate'||key==='flip')&&!selEmpty()&&!(key==='rotate'&&oneAtom(sel))){ pushUndo(); if(key==='rotate'){ const F=selFrame(), t=ROT[v]*D2R; applyFrom(grabPos(sel),rotF(F.cx,F.cy,t),true); } else flipSet(sel,v); changed(); } buildStrip(); };
     r.append(b); }
+  if(key==='select'){ const sp=document.createElement('span'); sp.className='vsep'; sp.style.margin='0 3px'; r.append(sp);
+    const b=document.createElement('button'); b.className='act'; b.innerHTML=ic(I.all)+'전체 선택'; b.onclick=()=>{ sel=allSet(); updateCopy(); render(); }; r.append(b); }
   if(key==='bracket'){ const sp=document.createElement('span'); sp.className='vsep'; sp.style.margin='0 3px'; r.append(sp);
     for(const [m,label,icon] of [['+','괄호에 + 붙이기','brp'],['-','괄호에 − 붙이기','brm'],['ts','괄호에 ‡ (전이 상태) 붙이기','brd'],['0','괄호 표시 지우기','brx']]){
       const b=document.createElement('button'); b.className='tb'; b.setAttribute('aria-label',label); b.title=label; b.setAttribute('aria-pressed',String(V.brm===m)); b.innerHTML=ic(I[icon]);
@@ -2121,11 +2116,16 @@ function importSmi(str,append,err){
 }
 function openSmiles(){
   const err=h('div',{className:'err'});
-  const ta=h('textarea',{className:'code',id:'smi',spellcheck:false,autocapitalize:'off',autocomplete:'off'}); ta.value=toSmiles(expandMol(M));
+  const ta=h('textarea',{className:'code',id:'smi',spellcheck:false,autocapitalize:'off',autocomplete:'off'});
+  const ss=selSub(); let part=!!ss;
+  const fill=()=>{ try{ ta.value=toSmiles(expandMol(part?ss.sub:M)); }catch(x){ ta.value=''; } err.textContent='';
+    if(seg){ seg.firstChild.setAttribute('aria-pressed',String(part)); seg.lastChild.setAttribute('aria-pressed',String(!part)); pn.textContent=part&&ss.cut?'선택 밖과 이어진 결합 '+ss.cut+'개 자리는 수소로 채웠습니다.':''; } };
+  const seg=ss?h('div',{className:'seg',role:'group','aria-label':'범위'},h('button',{className:'btn',type:'button',on:{click:()=>{ part=true; fill(); }}},'선택한 구조'),h('button',{className:'btn',type:'button',on:{click:()=>{ part=false; fill(); }}},'전체')):null, pn=h('p',{className:'note'});
   const copyBtn=h('button',{className:'btn',type:'button'},'복사');
   copyBtn.onclick=()=>{ try{ navigator.clipboard.writeText(ta.value).then(()=>{ copyBtn.textContent='복사됨'; setTimeout(()=>copyBtn.textContent='복사',1500); },()=>{ ta.select(); err.textContent='자동 복사가 막혀 있어 텍스트를 선택해 두었습니다.'; }); }catch(x){ ta.select(); } };
   const stereo=M.bonds.some(b=>b.s==='w'||b.s==='h')?h('p',{className:'note'},'쐐기 결합의 입체 정보는 SMILES에 들어가지 않습니다.'):null;
-  openSheet('SMILES',[ta,err,stereo,h('div',{className:'acts'},h('button',{className:'btn primary',type:'button',on:{click:()=>importSmi(ta.value,false,err)}},'구조 불러오기'),h('button',{className:'btn',type:'button',on:{click:()=>importSmi(ta.value,true,err)}},'현재 그림에 추가'),copyBtn)]);
+  fill();
+  openSheet('SMILES',[seg,seg?pn:null,ta,err,stereo,h('div',{className:'acts'},h('button',{className:'btn primary',type:'button',on:{click:()=>importSmi(ta.value,false,err)}},'구조 불러오기'),h('button',{className:'btn',type:'button',on:{click:()=>importSmi(ta.value,true,err)}},'현재 그림에 추가'),copyBtn)]);
 }
 document.addEventListener('paste',e=>{
   if(e.target.closest&&e.target.closest('textarea,input')) return;
