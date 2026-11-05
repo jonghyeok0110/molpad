@@ -81,7 +81,7 @@ svg.i{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.5;stro
 .lcol{position:absolute;left:max(0px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%);z-index:2;transition:transform .2s ease}
 .lcol .fl{display:flex;flex-direction:column;padding:4px;border-radius:0 10px 10px 0;border-left:0;max-height:calc(100vh - 220px);overflow-y:auto;scrollbar-width:none}
 .lcol .tb{width:44px;height:44px;font-size:18px;font-weight:400}
-.lcol .tab{position:absolute;left:100%;top:50%;transform:translateY(-50%);width:22px;height:56px;border:1px solid var(--line);border-left:0;background:var(--panel);border-radius:0 8px 8px 0;cursor:pointer;color:var(--muted);font-size:11px;box-shadow:var(--shadow)}
+.lcol .tab{position:absolute;left:100%;top:50%;transform:translateY(-50%);width:22px;height:56px;border:1px solid var(--line);border-left:0;background:var(--panel);border-radius:0 8px 8px 0;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:0;box-shadow:var(--shadow)}
 .lcol.collapsed{transform:translate(calc(-100% - 1px),-50%)}
 .lcol.collapsed .tab span{display:inline-block;transform:scaleX(-1)}
 
@@ -597,11 +597,11 @@ if(typeof module!=='undefined') module.exports={parseSmiles,toSmiles,formula,lay
 (()=>{
 const $=id=>document.getElementById(id);
 const svg=$('svg'), viewG=$('view'), shpG=$('shp'), molG=$('mol'), ovl=$('ovl');
-const L=1, MERGE=0.3, D2R=Math.PI/180;
+const L=1, MERGE=0.06, D2R=Math.PI/180; // 미리보기에서 겹쳐 보이는 원자끼리만 합친다
 let M={atoms:[],bonds:[],shapes:[]};
 let view={s:42,tx:0,ty:0};
 let tool='bond', strip='bond';
-const V={bond:'single',multi:'double',ring:'6a',arrow:'fwd',shape:'rect',bracket:'sq',charge:'+',color:'c-red',select:'rect',atom:'C',group:'Ph',rotate:'ccw15',flip:'h'};
+const V={bond:'single',multi:'double',ring:'r6a',arrow:'fwd',shape:'rect',bracket:'sq',charge:'+',color:'c-red',select:'rect',atom:'C',group:'Ph',rotate:'ccw15',flip:'h'};
 let sel={atoms:new Set(),shapes:new Set()};
 const undoS=[], redoS=[];
 let hover=null, drag=null, topo=0, customEl=null;
@@ -648,8 +648,26 @@ const I={
   clean:'<path d="M4 20l7-7"/><path d="M13 4l1.2 2.8L17 8l-2.8 1.2L13 12l-1.2-2.8L9 8l2.8-1.2z"/><path d="M18.5 13l.7 1.5 1.5.7-1.5.7-.7 1.5-.7-1.5-1.5-.7 1.5-.7z"/>',
   all:'<rect x="4" y="4" width="16" height="16" stroke-dasharray="2.5 2.2"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
   smiles:'<path d="M8 6L3 12l5 6M16 6l5 6-5 6M14 4l-4 16"/>',
-  color:'<circle cx="12" cy="12" r="7.5" stroke="var(--c-red)" stroke-width="3" stroke-dasharray="7.85 31.4"/><circle cx="12" cy="12" r="7.5" stroke="var(--c-orange)" stroke-width="3" stroke-dasharray="0 7.85 7.85 31.4"/><circle cx="12" cy="12" r="7.5" stroke="var(--c-green)" stroke-width="3" stroke-dasharray="0 15.7 7.85 31.4"/><circle cx="12" cy="12" r="7.5" stroke="var(--c-blue)" stroke-width="3" stroke-dasharray="0 23.55 7.85 31.4"/>'
+  color:'<circle cx="12" cy="12" r="7.5" stroke="#e5322b" stroke-width="3" stroke-dasharray="0 0.000 7.904 47.124" transform="rotate(-90 12 12)"/><circle cx="12" cy="12" r="7.5" stroke="#f08a1c" stroke-width="3" stroke-dasharray="0 7.854 7.904 47.124" transform="rotate(-90 12 12)"/><circle cx="12" cy="12" r="7.5" stroke="#f2c81e" stroke-width="3" stroke-dasharray="0 15.708 7.904 47.124" transform="rotate(-90 12 12)"/><circle cx="12" cy="12" r="7.5" stroke="#2fa84f" stroke-width="3" stroke-dasharray="0 23.562 7.904 47.124" transform="rotate(-90 12 12)"/><circle cx="12" cy="12" r="7.5" stroke="#2f6fe0" stroke-width="3" stroke-dasharray="0 31.416 7.904 47.124" transform="rotate(-90 12 12)"/><circle cx="12" cy="12" r="7.5" stroke="#8a3fc4" stroke-width="3" stroke-dasharray="0 39.270 7.904 47.124" transform="rotate(-90 12 12)"/>'
 };
+Object.assign(I,{
+  hh:(()=>{ let t=''; for(let k=0;k<7;k++){ const q=k/6, px=5+14*q, py=19-14*q; t+=`<path d="M${(px-1.5).toFixed(2)} ${(py-1.5).toFixed(2)}L${(px+1.5).toFixed(2)} ${(py+1.5).toFixed(2)}"/>`; } return t; })(),
+  g:'<path d="M5 19L19 5" stroke-dasharray="2.2 2" opacity=".45"/>', ld:'<path d="M5 19L19 5" stroke-dasharray="4.6 2.6"/>',
+  ar:'<path d="M5 19L16 8"/><path d="M19 5L17 10.1 13.9 7z" fill="currentColor"/>', wo:'<path d="M5 19L18 4.3 19.7 6z"/>',
+  dd:'<path d="M5 19L19 5" stroke-dasharray="4 1.6 1 1.6"/>',
+  brp:'<path d="M6.5 6H4v13h2.5M13.5 6H16v13h-2.5"/><path d="M20 3.5v5M17.5 6h5"/>', brm:'<path d="M6.5 6H4v13h2.5M13.5 6H16v13h-2.5"/><path d="M17.5 6h5"/>',
+  brd:'<path d="M6.5 6H4v13h2.5M13.5 6H16v13h-2.5"/><path d="M20 2.5v8M18 4.5h4M18 8h4"/>', brx:'<path d="M6.5 6H4v13h2.5M13.5 6H16v13h-2.5"/><path d="M18 4l4 4M22 4l-4 4"/>', dt:'<path d="M5 19L19 5" stroke-dasharray=".1 2.7" stroke-width="2"/>',
+  bd:'<path d="M4 17L17 4" stroke-width="3.2"/><path d="M7 20L20 7"/>', pd:'<path d="M4 17L17 4"/><path d="M7 20L20 7" stroke-dasharray="2.2 2"/>',
+  xd:'<path d="M4 17L17 4M7 20L20 7" stroke-dasharray="2.2 2"/>', pdd:'<path d="M4 17L17 4"/><path d="M7 20L20 7" stroke-dasharray="4 1.5 1 1.5"/>',
+  cx:'<path d="M3 9.5l18 5M3 14.5l18-5"/>', pt:'<path d="M4 17L17 4"/><path d="M7 20L20 7" stroke-dasharray=".1 2.4" stroke-width="1.9"/>',
+  rc:'<circle cx="7.5" cy="12" r="1.8" fill="currentColor" stroke="none"/><path d="M16 8v8M12 12h8"/>',
+  ra:'<circle cx="7.5" cy="12" r="1.8" fill="currentColor" stroke="none"/><path d="M12 12h8"/>',
+  lp:'<circle cx="8.5" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="15.5" cy="12" r="1.8" fill="currentColor" stroke="none"/>',
+  ex1:'<path d="M5.5 9.5l5 5M10.5 9.5l-5 5"/><circle cx="16.5" cy="12" r="1.8" fill="currentColor" stroke="none"/>',
+  dx:'<circle cx="7.5" cy="12" r="1.8" fill="currentColor" stroke="none"/><path d="M13.5 9.5l5 5M18.5 9.5l-5 5"/>',
+  xx:'<path d="M4 9.5l5 5M9 9.5l-5 5M15 9.5l5 5M20 9.5l-5 5"/>',
+  cond:'<text x="9.5" y="9" font-size="7" text-anchor="middle" stroke="none" fill="currentColor" font-family="sans-serif">Aa</text><text x="9.5" y="20.5" font-size="7" text-anchor="middle" stroke="none" fill="currentColor" font-family="sans-serif">Aa</text><path d="M2.5 12.5h16"/><path d="M17 9.5l4.5 3-4.5 3z" fill="currentColor"/>',
+});
 for(const n of [3,4,5,6,7,8]) I['r'+n]=polyIcon(n,false);
 I.r6a=polyIcon(6,true); I.r5a=polyIcon(5,true);
 
@@ -705,6 +723,7 @@ const TEMPLATES=[
 const PAL_LIGHT={ink:'#1b1f24','el-n':'#2547d0','el-o':'#e0261f','el-s':'#b08a00','el-p':'#d06400','el-hal':'#13893a','el-br':'#9a3320','el-i':'#7b26aa','el-x':'#6b4fa8',
   'c-red':'#d8261f','c-blue':'#2453d6','c-green':'#16883c','c-orange':'#d46a00','c-purple':'#7c34b8'};
 const COLORS=[['ink','검정'],['c-red','빨강'],['c-blue','파랑'],['c-green','초록'],['c-orange','주황'],['c-purple','보라']];
+let CUSTOM_COLORS=[]; try{ CUSTOM_COLORS=(JSON.parse(localStorage.getItem('moldraw.colors')||'[]')||[]).filter(c=>/^#[0-9a-f]{6}$/i.test(c)).slice(0,6); }catch(e){}
 const elTok=el=>({N:'el-n',O:'el-o',S:'el-s',Se:'el-s',P:'el-p',F:'el-hal',Cl:'el-hal',Br:'el-br',I:'el-i'})[el]||(el==='C'||el==='H'?'ink':'el-x');
 
 /* ---------- 저장 · 실행 취소 ---------- */
@@ -738,7 +757,90 @@ function allSet(){ return {atoms:new Set(M.atoms.map((_,i)=>i)),shapes:new Set(M
 
 /* ---------- 도형 좌표 ---------- */
 const isBox=s=>s.t==='rect'||s.t==='br';
-function shapePts(s){ return s.t==='text'?[[s.x,s.y]]:[[s.x1,s.y1],[s.x2,s.y2]]; }
+// 괄호 오른쪽 위 표시: ‡(전이 상태) + 전하
+const brMark=s=>(s.ts?'‡':'')+(s.c?(Math.abs(s.c)>1?Math.abs(s.c):'')+(s.c>0?'+':'−'):'');
+function markBr(s,m){ if(m==='+') s.c=Math.min(4,(s.c||0)+1); else if(m==='-') s.c=Math.max(-4,(s.c||0)-1); else if(m==='ts') s.ts=s.ts?0:1; else { s.c=0; s.ts=0; }
+  if(!s.c) delete s.c; if(!s.ts) delete s.ts; }
+function shapePts(s){ if(s.t==='text') return [[s.x,s.y]]; if(s.t==='br'&&brMark(s)){ const x2=Math.max(s.x1,s.x2), y1=Math.min(s.y1,s.y2); return [[s.x1,s.y1],[s.x2,s.y2],[x2+.1+.22*brMark(s).length,y1-.15]]; } if(s.t==='arrow'){ const G=arrowGeo(s), P=G.pts.slice(); if(s.top||s.bot){ const c=condPos(s,G); P.push(...c.box); } return P; } return [[s.x1,s.y1],[s.x2,s.y2]]; }
+// 곡선 화살표: c=꽉 찬 머리, f=반쪽(낚싯바늘) 머리, b=양쪽 머리 · 1~3=휜 정도, O=원 · u/d=휘는 쪽
+const isCurve=v=>/^[cfb][123O][ud]?$/.test(v||'');
+function arrowGeo(s){
+  const dx=s.x2-s.x1, dy=s.y2-s.y1, len=Math.hypot(dx,dy)||1e-6, ux=dx/len, uy=dy/len, sg=s.m?-1:1;
+  let nx=uy*sg, ny=-ux*sg; // 진행 방향 기준 '위쪽'
+  const cm=(s.v||'').match(/^([cfb])([123O])([ud])?$/);
+  if(!cm) return {curve:false,pts:[[s.x1,s.y1],[s.x2,s.y2]],ux,uy,nx,ny,len};
+  if(cm[3]==='d'){ nx=-nx; ny=-ny; }
+  const N=40, pts=[], x1=s.x1, y1=s.y1, x2=s.x2, y2=s.y2;
+  if(cm[2]==='O'){ const R=.75*len, h=Math.sqrt(R*R-len*len/4), cx=(x1+x2)/2+nx*h, cy=(y1+y2)/2+ny*h;
+    const a1=Math.atan2(y1-cy,x1-cx), a2=Math.atan2(y2-cy,x2-cx); let d=a2-a1; while(d>Math.PI) d-=2*Math.PI; while(d<=-Math.PI) d+=2*Math.PI; d=d>0?d-2*Math.PI:d+2*Math.PI;
+    for(let k=0;k<=N;k++){ const t=a1+d*k/N; pts.push([cx+R*Math.cos(t),cy+R*Math.sin(t)]); } }
+  else if(cm[2]==='1'){ const qx=(x1+x2)/2+nx*.55*len, qy=(y1+y2)/2+ny*.55*len;
+    for(let k=0;k<=N;k++){ const t=k/N, a=(1-t)*(1-t), b=2*t*(1-t), c=t*t; pts.push([a*x1+b*qx+c*x2,a*y1+b*qy+c*y2]); } }
+  else { const h=cm[2]==='2'?.75:1, w=cm[2]==='2'?0:.45, c1=[x1+nx*h*len-ux*w*len,y1+ny*h*len-uy*w*len], c2=[x2+nx*h*len+ux*w*len,y2+ny*h*len+uy*w*len];
+    for(let k=0;k<=N;k++){ const t=k/N, a=(1-t)**3, b=3*t*(1-t)**2, c=3*t*t*(1-t), d=t**3; pts.push([a*x1+b*c1[0]+c*c2[0]+d*x2,a*y1+b*c1[1]+c*c2[1]+d*y2]); } }
+  return {curve:true,kind:cm[1],pts,ux,uy,nx,ny,len};
+}
+// 반응 조건 글자 위치: 화면 기준 위·아래 (세로에 가까우면 오른쪽·왼쪽)
+function condPos(s,G){
+  const mx=(s.x1+s.x2)/2, my=(s.y1+s.y2)/2;
+  if(Math.abs(G.uy)>.85) return {vert:true,top:[mx+.16,my+.12],bot:[mx-.16,my+.12],box:[[mx+.2+.24*Math.max(1,(s.top||'').length),my],[mx-.2-.24*Math.max(1,(s.bot||'').length),my]]};
+  let ux=-G.uy, uy=G.ux; if(uy>0){ ux=-ux; uy=-uy; }
+  const tc=[mx+ux*.3,my+uy*.3], bc=[mx-ux*.32,my-uy*.32], w=.13*Math.max((s.top||'').length,(s.bot||'').length,1);
+  return {vert:false,top:[tc[0],tc[1]+.12],bot:[bc[0],bc[1]+.12],box:[[tc[0]-w,tc[1]-.2],[tc[0]+w,tc[1]-.2],[bc[0]-w,bc[1]+.2],[bc[0]+w,bc[1]+.2]]};
+}
+function drawArrow(s,P,FONT,o){
+  o=o||{}; const sw=o.sw||.042, hs=o.hs||1, col=P(s.k||'ink'), v=s.v||'fwd', G=arrowGeo(s), {ux,uy,nx,ny,len}=G;
+  const pt=q=>f3(q[0])+','+f3(q[1]);
+  const LN=(x1,y1,x2,y2,ex)=>`<line x1="${f3(x1)}" y1="${f3(y1)}" x2="${f3(x2)}" y2="${f3(y2)}" style="stroke:${col};stroke-width:${sw};stroke-linecap:butt${ex||''}"/>`;
+  const PL=(P_,ex)=>`<polyline points="${P_.map(pt).join(' ')}" style="fill:none;stroke:${col};stroke-width:${sw};stroke-linecap:butt;stroke-linejoin:round${ex||''}"/>`;
+  const TRI=P_=>`<polygon points="${P_.map(pt).join(' ')}" style="fill:${col};stroke:${col};stroke-width:${sw*.4};stroke-linejoin:miter"/>`;
+  // 머리: tip, 진행 방향(dx,dy), 종류, 반쪽일 때 쪽 벡터
+  const head=(tx,ty,dx,dy,kind,hl,hw,side)=>{ const px=-dy, py=dx;
+    if(kind==='full') return TRI([[tx,ty],[tx-dx*hl+px*hw,ty-dy*hl+py*hw],[tx-dx*hl-px*hw,ty-dy*hl-py*hw]]);
+    if(kind==='half') return TRI([[tx,ty],[tx-dx*hl+side[0]*hw*1.5,ty-dy*hl+side[1]*hw*1.5],[tx-dx*hl*.7,ty-dy*hl*.7]]);
+    return PL([[tx-dx*hl*1.1+px*hw*1.5,ty-dy*hl*1.1+py*hw*1.5],[tx,ty],[tx-dx*hl*1.1-px*hw*1.5,ty-dy*hl*1.1-py*hw*1.5]]); };
+  let S='';
+  if(G.curve){
+    const P_=G.pts, n=P_.length, hl=Math.min(.26,len*.3)*hs, hw=.1*hs, kind=G.kind==='f'?'half':'full';
+    const dir=(a,b)=>{ const dx=a[0]-b[0], dy=a[1]-b[1], l=Math.hypot(dx,dy)||1; return [dx/l,dy/l]; };
+    let cx=0,cy=0; P_.forEach(q=>{ cx+=q[0]; cy+=q[1]; }); cx/=n; cy/=n;
+    const outSide=(t,d)=>{ let sx=-d[1], sy=d[0]; if(sx*(cx-t[0])+sy*(cy-t[1])>0){ sx=-sx; sy=-sy; } return [sx,sy]; };
+    const trim=(arr,fromEnd,amt)=>{ const a=fromEnd?arr.slice():arr.slice().reverse(); let acc=0; while(a.length>2){ const l=Math.hypot(a[a.length-1][0]-a[a.length-2][0],a[a.length-1][1]-a[a.length-2][1]); if(acc+l>amt) break; acc+=l; a.pop(); } return fromEnd?a:a.reverse(); };
+    let line=P_; if(kind==='full') line=trim(line,true,hl*.6); if(G.kind==='b') line=trim(line,false,hl*.6);
+    S+=PL(line);
+    const de=dir(P_[n-1],P_[n-3]); S+=head(P_[n-1][0],P_[n-1][1],de[0],de[1],kind,hl,hw,outSide(P_[n-1],de));
+    if(G.kind==='b'){ const ds=dir(P_[0],P_[2]); S+=head(P_[0][0],P_[0][1],ds[0],ds[1],'full',hl,hw); }
+    return S;
+  }
+  const hl=Math.min(.3,len*.4)*hs, hw=.12*hs;
+  if(v==='eq'){ const o_=.07;
+    S+=LN(s.x1+nx*o_,s.y1+ny*o_,s.x2+nx*o_-ux*.05,s.y2+ny*o_-uy*.05)+LN(s.x2+nx*o_,s.y2+ny*o_,s.x2+nx*o_-ux*hl+nx*hw*1.3,s.y2+ny*o_-uy*hl+ny*hw*1.3);
+    S+=LN(s.x2-nx*o_,s.y2-ny*o_,s.x1-nx*o_+ux*.05,s.y1-ny*o_+uy*.05)+LN(s.x1-nx*o_,s.y1-ny*o_,s.x1-nx*o_+ux*hl-nx*hw*1.3,s.y1-ny*o_+uy*hl-ny*hw*1.3); }
+  else if(v==='retro'){ const o_=.08, e=hl*.9;
+    S+=LN(s.x1+nx*o_,s.y1+ny*o_,s.x2+nx*o_-ux*e,s.y2+ny*o_-uy*e)+LN(s.x1-nx*o_,s.y1-ny*o_,s.x2-nx*o_-ux*e,s.y2-ny*o_-uy*e);
+    S+=PL([[s.x2-ux*hl*1.5+nx*hw*2.2,s.y2-uy*hl*1.5+ny*hw*2.2],[s.x2,s.y2],[s.x2-ux*hl*1.5-nx*hw*2.2,s.y2-uy*hl*1.5-ny*hw*2.2]],';stroke-linejoin:miter'); }
+  else if(v==='hu'||v==='hd'){ const sd=v==='hu'?[nx,ny]:[-nx,-ny]; S+=LN(s.x1,s.y1,s.x2-ux*.02,s.y2-uy*.02)+head(s.x2,s.y2,ux,uy,'half',hl,hw,sd); }
+  else if(v==='open'){ S+=LN(s.x1,s.y1,s.x2,s.y2)+head(s.x2,s.y2,ux,uy,'open',hl,hw); }
+  else { const big=v==='big', H=big?hl*1.45:hl, W=big?hw*1.5:hw, a0=v==='res'?H*.8:0;
+    S+=LN(s.x1+ux*a0,s.y1+uy*a0,s.x2-ux*H*.8,s.y2-uy*H*.8)+head(s.x2,s.y2,ux,uy,'full',H,W); if(v==='res') S+=head(s.x1,s.y1,-ux,-uy,'full',H,W);
+    const mx=(s.x1+s.x2)/2-ux*hl*.3, my=(s.y1+s.y2)/2-uy*hl*.3, c=.11*hs;
+    if(v==='x') S+=LN(mx-(ux+nx)*c,my-(uy+ny)*c,mx+(ux+nx)*c,my+(uy+ny)*c)+LN(mx-(ux-nx)*c,my-(uy-ny)*c,mx+(ux-nx)*c,my+(uy-ny)*c);
+    if(v==='sl') for(const g of [-1,1]){ const ox=mx+ux*g*.055*hs, oy=my+uy*g*.055*hs; S+=LN(ox-nx*c*1.4-ux*c*.6,oy-ny*c*1.4-uy*c*.6,ox+nx*c*1.4+ux*c*.6,oy+ny*c*1.4+uy*c*.6); } }
+  if((s.top||s.bot)&&FONT){ const c=condPos(s,G), T=(q,a,t)=>`<text transform="translate(${f3(q[0])} ${f3(q[1])}) scale(.01)" text-anchor="${a}" style="fill:${col};font-family:${FONT};font-weight:500;font-size:36px">${esc(t)}</text>`;
+    if(s.top) S+=T(c.top,c.vert?'start':'middle',s.top); if(s.bot) S+=T(c.bot,c.vert?'end':'middle',s.bot); }
+  return S;
+}
+function arrowIcon(v){
+  const s={t:'arrow',v,x1:0,y1:0,x2:2,y2:0}, G=arrowGeo(s);
+  let a=1e9,b=-1e9,c=1e9,d=-1e9; for(const q of G.pts){ a=Math.min(a,q[0]); b=Math.max(b,q[0]); c=Math.min(c,q[1]); d=Math.max(d,q[1]); }
+  a-=.15; b+=.15; c-=.15; d+=.15;
+  const sc=Math.min(19/(b-a),17/(d-c),9.5), tx=12-sc*(a+b)/2, ty=12-sc*(c+d)/2;
+  return `<g transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${sc.toFixed(3)})">${drawArrow(s,()=>'currentColor',null,{sw:1.5/sc,hs:(G.curve?4.4/.26:4.6/.3)/sc})}</g>`;
+}
+// 의자형·보트형 사이클로헥세인 (고리 순서대로)
+const CONF={chair:[[0,0],[.6,-.8],[1.6,-.5],[2.35,-.85],[1.75,-.05],[.75,-.35]],boat:[[0,-.7],[.85,-.2],[1.65,-.2],[2.5,-.7],[1.75,.2],[.75,.2]]};
+function confIcon(v){ const P_=CONF[v], sc=7.2; let a=1e9,b=-1e9,c=1e9,d=-1e9; for(const q of P_){ a=Math.min(a,q[0]); b=Math.max(b,q[0]); c=Math.min(c,q[1]); d=Math.max(d,q[1]); }
+  return `<polygon points="${P_.map(q=>((q[0]-(a+b)/2)*sc+12).toFixed(1)+','+((q[1]-(c+d)/2)*sc+12).toFixed(1)).join(' ')}"/>`; }
 // 옥텟 규칙(2주기)과 확장 옥텟(3주기 이상)으로 허용되는 최대 결합 수
 const VE={H:1,B:3,C:4,N:5,O:6,F:7,Al:3,Si:4,P:5,S:6,Cl:7,Ga:3,Ge:4,As:5,Se:6,Br:7,Sn:4,Sb:5,Te:6,I:7,Xe:8};
 function maxValence(el,c){
@@ -772,7 +874,7 @@ function applyFrom(G,f,rigid){
 }
 const rotF=(cx,cy,t)=>{ const c=Math.cos(t), s=Math.sin(t); return (x,y)=>[cx+(x-cx)*c-(y-cy)*s, cy+(x-cx)*s+(y-cy)*c]; };
 function rotateSet(S,deg){ const b=setBBox(S,0); if(!b) return; applyFrom(grabPos(S),rotF(b.cx,b.cy,deg*D2R),true); }
-function flipSet(S,ax){ const b=setBBox(S,0); if(!b) return; applyFrom(grabPos(S), ax==='h'?(x,y)=>[2*b.cx-x,y]:(x,y)=>[x,2*b.cy-y], false); }
+function flipSet(S,ax){ const b=setBBox(S,0); if(!b) return; applyFrom(grabPos(S), ax==='h'?(x,y)=>[2*b.cx-x,y]:(x,y)=>[x,2*b.cy-y], false); S.shapes.forEach(j=>{ const s=M.shapes[j]; if(s&&s.t==='arrow'){ if(s.m) delete s.m; else s.m=1; } }); }
 
 /* ---------- 모델 편집 ---------- */
 function findAtomNear(x,y,r,exclude){ let best=-1,bd=r*r; M.atoms.forEach((a,i)=>{ if(i===exclude) return; const d=(a.x-x)**2+(a.y-y)**2; if(d<bd){ bd=d; best=i; } }); return best; }
@@ -853,7 +955,18 @@ function placeRingPts(pts,arom){
   if(arom) setRingDoubles(ids);
 }
 const snapA=t=>Math.round(t/(Math.PI/12))*(Math.PI/12);
+function confPv(hit,m){
+  const base=CONF[V.ring]; let ox,oy,anchor,ang=0;
+  let cx=0,cy=0; base.forEach(q=>{ cx+=q[0]; cy+=q[1]; }); cx/=6; cy/=6;
+  const ai=hit.type==='atom'?hit.i:hit.type==='bond'?M.bonds[hit.k].a:-1;
+  if(ai>=0){ const a=M.atoms[ai]; anchor=[base[0][0],base[0][1]]; ox=a.x; oy=a.y;
+    const want=m&&Math.hypot(m.x-a.x,m.y-a.y)>.25?Math.atan2(m.y-a.y,m.x-a.x):freeDir(ai); ang=snapA(want-Math.atan2(cy-base[0][1],cx-base[0][0])); }
+  else { anchor=[cx,cy]; ox=hit.x; oy=hit.y; if(m&&Math.hypot(m.x-ox,m.y-oy)>.25) ang=snapA(Math.atan2(m.y-oy,m.x-ox)); }
+  const c=Math.cos(ang), s=Math.sin(ang);
+  return {kind:'ring',n:6,ar:false,pts:base.map(q=>{ const x=q[0]-anchor[0], y=q[1]-anchor[1]; return [ox+x*c-y*s, oy+x*s+y*c]; })};
+}
 function ringPv(hit,m){
+  if(CONF[V.ring]) return confPv(hit,m);
   const [n,ar]=RINGDEF[V.ring]; let kind,ref,ang=null;
   if(hit.type==='atom'){ kind='atom'; ref=hit.i; const a=M.atoms[ref]; if(m&&Math.hypot(m.x-a.x,m.y-a.y)>.25) ang=snapA(Math.atan2(m.y-a.y,m.x-a.x)); }
   else if(hit.type==='bond'){ kind='bond'; ref=hit.k; if(m){ const b=M.bonds[ref], A=M.atoms[b.a], B=M.atoms[b.b], s=Math.sign(-(B.y-A.y)*(m.x-(A.x+B.x)/2)+(B.x-A.x)*(m.y-(A.y+B.y)/2)); if(s) ang=s; } }
@@ -896,7 +1009,7 @@ const toModel=(px,py)=>({x:(px-view.tx)/view.s,y:(py-view.ty)/view.s});
 function evPt(e){ const r=svg.getBoundingClientRect(); return {px:e.clientX-r.left,py:e.clientY-r.top}; }
 function distSeg(px,py,x1,y1,x2,y2){ const dx=x2-x1, dy=y2-y1, l2=dx*dx+dy*dy||1e-9; let t=((px-x1)*dx+(py-y1)*dy)/l2; t=Math.max(0,Math.min(1,t)); return Math.hypot(px-x1-t*dx,py-y1-t*dy); }
 function shapeDist(s,x,y){
-  if(s.t==='arrow') return distSeg(x,y,s.x1,s.y1,s.x2,s.y2);
+  if(s.t==='arrow'){ const P_=arrowGeo(s).pts; let m=1e9; for(let k=1;k<P_.length;k++) m=Math.min(m,distSeg(x,y,P_[k-1][0],P_[k-1][1],P_[k][0],P_[k][1])); return m; }
   if(s.t==='text'){ const w=textW(s)/2; return Math.hypot(Math.max(Math.abs(x-s.x)-w,0),Math.max(Math.abs(y-s.y)-.27,0)); }
   const x1=Math.min(s.x1,s.x2), x2=Math.max(s.x1,s.x2), y1=Math.min(s.y1,s.y2), y2=Math.max(s.y1,s.y2);
   if(s.t==='rect'&&s.v==='ellipse'){ const rx=(x2-x1)/2||.01, ry=(y2-y1)/2||.01, cx=x1+rx, cy=y1+ry; return Math.abs(Math.hypot((x-cx)/rx,(y-cy)/ry)-1)*Math.min(rx,ry); }
@@ -942,7 +1055,7 @@ function ringInfo(){
 const f3=v=>v.toFixed(3);
 function build(P,FONT){
   const adj=adjOf(M), rings=ringInfo();
-  const labeled=M.atoms.map((a,i)=>!!a.ab||a.el!=='C'||!!a.lab||!!a.c||!!a.r||adj[i].length===0), boxes=[];
+  const labeled=M.atoms.map((a,i)=>!!a.ab||a.el!=='C'||!!a.lab||!!a.c||!!a.r||!!a.lp||!!a.m||adj[i].length===0), boxes=[];
   const ln=(x1,y1,x2,y2,tok,w,ex)=>`<line x1="${f3(x1)}" y1="${f3(y1)}" x2="${f3(x2)}" y2="${f3(y2)}" style="stroke:${P(tok)};stroke-width:${w||.042};stroke-linecap:butt${ex||''}"/>`;
   const T=(x,y,tok,anchor,body,size)=>`<text transform="translate(${f3(x)} ${f3(y)}) scale(.01)" text-anchor="${anchor}" style="fill:${P(tok)};font-family:${FONT};font-weight:500;font-size:${size||46}px">${body}</text>`;
   let S='', B='';
@@ -950,18 +1063,7 @@ function build(P,FONT){
   M.shapes.forEach(s=>{
     const k=s.k||'ink', st=`style="stroke:${P(k)};stroke-width:.042;fill:none;stroke-linecap:butt;stroke-linejoin:miter"`;
     if(s.t==='text'){ S+=T(s.x,s.y+.16,k,'middle',esc(s.s)); return; }
-    if(s.t==='arrow'){
-      const dx=s.x2-s.x1, dy=s.y2-s.y1, len=Math.hypot(dx,dy)||1, ux=dx/len, uy=dy/len, nx=-uy, ny=ux, hl=Math.min(.3,len*.4), hw=.12;
-      const head=(x,y,dx,dy)=>`<polygon points="${f3(x)},${f3(y)} ${f3(x-dx*hl+(-dy)*hw)},${f3(y-dy*hl+dx*hw)} ${f3(x-dx*hl-(-dy)*hw)},${f3(y-dy*hl-dx*hw)}" style="fill:${P(k)}"/>`;
-      if(s.v==='eq'){ const o=.07;
-        S+=ln(s.x1+nx*o,s.y1+ny*o,s.x2+nx*o-ux*.05,s.y2+ny*o-uy*.05,k,.042)+ln(s.x2+nx*o,s.y2+ny*o,s.x2+nx*o-ux*hl+nx*hw*1.3,s.y2+ny*o-uy*hl+ny*hw*1.3,k,.042);
-        S+=ln(s.x2-nx*o,s.y2-ny*o,s.x1-nx*o+ux*.05,s.y1-ny*o+uy*.05,k,.042)+ln(s.x1-nx*o,s.y1-ny*o,s.x1-nx*o+ux*hl-nx*hw*1.3,s.y1-ny*o+uy*hl-ny*hw*1.3,k,.042); }
-      else if(s.v==='retro'){ const o=.08, e=hl*.9;
-        S+=ln(s.x1+nx*o,s.y1+ny*o,s.x2+nx*o-ux*e,s.y2+ny*o-uy*e,k,.042)+ln(s.x1-nx*o,s.y1-ny*o,s.x2-nx*o-ux*e,s.y2-ny*o-uy*e,k,.042);
-        S+=`<polyline points="${f3(s.x2-ux*hl*1.5+nx*hw*2.2)},${f3(s.y2-uy*hl*1.5+ny*hw*2.2)} ${f3(s.x2)},${f3(s.y2)} ${f3(s.x2-ux*hl*1.5-nx*hw*2.2)},${f3(s.y2-uy*hl*1.5-ny*hw*2.2)}" ${st}/>`; }
-      else { const a0=s.v==='res'?hl*.8:0; S+=ln(s.x1+ux*a0,s.y1+uy*a0,s.x2-ux*hl*.8,s.y2-uy*hl*.8,k,.042)+head(s.x2,s.y2,ux,uy); if(s.v==='res') S+=head(s.x1,s.y1,-ux,-uy); }
-      return;
-    }
+    if(s.t==='arrow'){ S+=drawArrow(s,P,FONT); return; }
     const x1=Math.min(s.x1,s.x2), x2=Math.max(s.x1,s.x2), y1=Math.min(s.y1,s.y2), y2=Math.max(s.y1,s.y2), w=x2-x1, h=y2-y1;
     if(s.t==='rect'){
       if(s.v==='ellipse') S+=`<ellipse cx="${f3(x1+w/2)}" cy="${f3(y1+h/2)}" rx="${f3(w/2)}" ry="${f3(h/2)}" ${st}/>`;
@@ -974,6 +1076,7 @@ function build(P,FONT){
       else if(s.v==='curly'){ const c=(x,sg)=>`M${f3(x+sg*a)} ${f3(y1)}Q${f3(x)} ${f3(y1)} ${f3(x)} ${f3(y1+a)}L${f3(x)} ${f3(ym-a*.6)}Q${f3(x)} ${f3(ym)} ${f3(x-sg*a*.7)} ${f3(ym)}Q${f3(x)} ${f3(ym)} ${f3(x)} ${f3(ym+a*.6)}L${f3(x)} ${f3(y2-a)}Q${f3(x)} ${f3(y2)} ${f3(x+sg*a)} ${f3(y2)}`; p=c(x1+a*.4,1)+c(x2-a*.4,-1); }
       else p=`M${f3(x1+a)} ${f3(y1)}H${f3(x1)}V${f3(y2)}H${f3(x1+a)}M${f3(x2-a)} ${f3(y1)}H${f3(x2)}V${f3(y2)}H${f3(x2-a)}`;
       S+=`<path d="${p}" ${st}/>`;
+      const mt=brMark(s); if(mt) S+=T(x2+.06,y1+.24,k,'start',esc(mt),44);
     }
   });
   // 결합
@@ -987,6 +1090,13 @@ function build(P,FONT){
         for(let q=0;q<n;q++){ const sx=x1+ux*seg*(q+.5), sy=y1+uy*seg*(q+.5), sg=q%2?-1:1, ex=x1+ux*seg*(q+1), ey=y1+uy*seg*(q+1); d+=`Q${f3(sx+nx*.13*sg)} ${f3(sy+ny*.13*sg)} ${f3(ex)} ${f3(ey)}`; }
         B+=`<path d="${d}" style="fill:none;stroke:${P(col)};stroke-width:.04;stroke-linecap:butt"/>`; return; }
       if(b.s==='b'){ B+=ln(x1,y1,x2,y2,col,.13); return; }
+      if(b.s==='wo'){ const w=.12; B+=`<polygon points="${f3(x1)},${f3(y1)} ${f3(x2+nx*w)},${f3(y2+ny*w)} ${f3(x2-nx*w)},${f3(y2-ny*w)}" style="fill:none;stroke:${P(col)};stroke-width:.032;stroke-linejoin:miter"/>`; return; }
+      if(b.s==='hh'){ const n=Math.max(4,Math.round(len*7)); for(let q=0;q<=n;q++){ const t=q/n, px=x1+(x2-x1)*t, py=y1+(y2-y1)*t, w=.085; B+=ln(px-nx*w,py-ny*w,px+nx*w,py+ny*w,col,.035); } return; }
+      if(b.s==='g'){ B+=ln(x1,y1,x2,y2,col,.042,';stroke-dasharray:.1 .08;opacity:.45'); return; }
+      if(b.s==='ld'){ B+=ln(x1,y1,x2,y2,col,.042,';stroke-dasharray:.22 .1'); return; }
+      if(b.s==='dt'){ B+=ln(x1,y1,x2,y2,col,.055,';stroke-dasharray:.001 .085;stroke-linecap:round'); return; }
+      if(b.s==='dd'){ B+=ln(x1,y1,x2,y2,col,.042,';stroke-dasharray:.24 .08 .05 .08'); return; }
+      if(b.s==='ar'){ const hl=.24, hw=.1; B+=ln(x1,y1,x2-ux*hl*.8,y2-uy*hl*.8,col)+`<polygon points="${f3(x2)},${f3(y2)} ${f3(x2-ux*hl+nx*hw)},${f3(y2-uy*hl+ny*hw)} ${f3(x2-ux*hl-nx*hw)},${f3(y2-uy*hl-ny*hw)}" style="fill:${P(col)}"/>`; return; }
       if(b.s==='d'){ B+=ln(x1,y1,x2,y2,col,.042,';stroke-dasharray:.08 .09'); return; }
       B+=ln(x1,y1,x2,y2,col); return;
     }
@@ -995,8 +1105,11 @@ function build(P,FONT){
     if(path){ let cx=0,cy=0; for(const i of path){ cx+=M.atoms[i].x; cy+=M.atoms[i].y; } cx/=path.length; cy/=path.length; side=Math.sign(nx*(cx-mx)+ny*(cy-my))||1; }
     else { const da=adj[b.a].length, db=adj[b.b].length, term=(da===1&&labeled[b.a])||(db===1&&labeled[b.b])||(da===1&&db===1);
       if(!term){ let sum=0; for(const i of [b.a,b.b]) for(const kk of adj[i]){ if(kk===k) continue; const o=M.atoms[other(M.bonds[kk],i)]; sum+=nx*(o.x-mx)+ny*(o.y-my); } side=Math.sign(sum)||1; } }
-    if(!side){ const o=.085; for(const g of [1,-1]) B+=ln(x1+nx*o*g,y1+ny*o*g,x2+nx*o*g,y2+ny*o*g,col); }
-    else { B+=ln(x1,y1,x2,y2,col); const o=.17*side, sa=labeled[b.a]?0:.13, sb=labeled[b.b]?0:.13; B+=ln(x1+nx*o+ux*sa,y1+ny*o+uy*sa,x2+nx*o-ux*sb,y2+ny*o-uy*sb,col); }
+    const v2=b.s, w1=v2==='bd'?.1:.042, d1=v2==='xd'?';stroke-dasharray:.09 .07':'', d2=({pd:';stroke-dasharray:.09 .07',xd:';stroke-dasharray:.09 .07',pdd:';stroke-dasharray:.2 .07 .04 .07',pt:';stroke-dasharray:.001 .075;stroke-linecap:round'})[v2]||'';
+    if(v2==='cx'){ const o=.085; B+=ln(x1+nx*o,y1+ny*o,x2-nx*o,y2-ny*o,col)+ln(x1-nx*o,y1-ny*o,x2+nx*o,y2+ny*o,col); return; }
+    const w2=v2==='pt'?.055:.042;
+    if(!side){ const o=.085; B+=ln(x1+nx*o,y1+ny*o,x2+nx*o,y2+ny*o,col,w1,d1)+ln(x1-nx*o,y1-ny*o,x2-nx*o,y2-ny*o,col,w2,d2); }
+    else { B+=ln(x1,y1,x2,y2,col,w1,d1); const o=.17*side, sa=labeled[b.a]?0:.13, sb=labeled[b.b]?0:.13; B+=ln(x1+nx*o+ux*sa,y1+ny*o+uy*sa,x2+nx*o-ux*sb,y2+ny*o-uy*sb,col,w2,d2); }
   });
   // 원자 기호
   M.atoms.forEach((a,i)=>{
@@ -1018,13 +1131,15 @@ function build(P,FONT){
     else { sx=X-we/2; body=a.el+(h?'H'+sub:'')+(chg?`<tspan dy="${hn?-30:-18}" style="font-size:32px">${chg}</tspan>`:''); }
     B+=T(sx,Y,tok,'start',body);
     const bx1=sx, bx2=sx+we+hw+wc;
-    if(a.r){ B+=`<circle cx="${f3(X)}" cy="${f3(a.y-.42)}" r=".055" style="fill:${P(tok)}"/>`; }
-    boxes[i]=[bx1-.04,bx2+.04,a.r?a.y-.52:yb[0],yb[1]];
+    const mk=[]; if(a.r) mk.push('d'); if(a.lp){ if(mk.length) mk.push('g'); mk.push('d','d'); } if(a.m){ if(mk.length) mk.push('g'); for(const ch of a.m) mk.push(ch==='x'?'x':'d'); }
+    if(mk.length){ const sp=.14, gw=.1; let w=0; mk.forEach((q,k)=>{ if(k) w+= q==='g'||mk[k-1]==='g'?gw/2:sp; }); let cx=X-w/2; const my=a.y-.42;
+      mk.forEach((q,k)=>{ if(k) cx+= q==='g'||mk[k-1]==='g'?gw/2:sp; if(q==='d') B+=`<circle cx="${f3(cx)}" cy="${f3(my)}" r=".05" style="fill:${P(tok)}"/>`; else if(q==='x') B+=ln(cx-.05,my-.05,cx+.05,my+.05,tok,.03)+ln(cx-.05,my+.05,cx+.05,my-.05,tok,.03); }); }
+    boxes[i]=[bx1-.04,bx2+.04,mk.length?a.y-.52:yb[0],yb[1]];
   });
   return {S,B,labeled,boxes};
 }
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
-const PV=t=>`var(--${t})`;
+const PV=t=>t&&t[0]==='#'?t:`var(--${t})`;
 const SCREEN_FONT='IBM Plex Sans KR, system-ui, sans-serif';
 function render(){
   viewG.setAttribute('transform',`translate(${view.tx.toFixed(2)} ${view.ty.toFixed(2)}) scale(${view.s.toFixed(4)})`);
@@ -1061,7 +1176,7 @@ function render(){
   // 미리보기
   if(drag&&drag.pv){ const p=drag.pv;
     if(p.kind==='bond') o+=`<line x1="${f3(p.x1)}" y1="${f3(p.y1)}" x2="${f3(p.x2)}" y2="${f3(p.y2)}" style="stroke:var(--accent);stroke-width:.06;stroke-dasharray:.14 .1;stroke-linecap:round"/><circle cx="${f3(p.x2)}" cy="${f3(p.y2)}" r=".08" style="fill:var(--accent)"/>`;
-    else if(p.kind==='arrow') o+=`<line x1="${f3(p.x1)}" y1="${f3(p.y1)}" x2="${f3(p.x2)}" y2="${f3(p.y2)}" style="stroke:var(--accent);stroke-width:.05;stroke-dasharray:.14 .1"/>`;
+    else if(p.kind==='arrow') o+=`<polyline points="${arrowGeo({v:V.arrow,x1:p.x1,y1:p.y1,x2:p.x2,y2:p.y2}).pts.map(q=>f3(q[0])+','+f3(q[1])).join(' ')}" style="fill:none;stroke:var(--accent);stroke-width:.05;stroke-dasharray:.14 .1"/>`;
     else if(p.kind==='box'||p.kind==='marq'){ const x1=Math.min(p.x1,p.x2), y1=Math.min(p.y1,p.y2); o+=`<rect x="${f3(x1)}" y="${f3(y1)}" width="${f3(Math.abs(p.x2-p.x1))}" height="${f3(Math.abs(p.y2-p.y1))}" style="fill:${p.kind==='marq'?'var(--accent-soft)':'none'};stroke:var(--accent);stroke-width:${f3(1.2*px)};stroke-dasharray:${f3(5*px)} ${f3(4*px)}"/>`; }
     else if(p.kind==='ring'){ const P=p.pts, n=P.length; let cx=0,cy=0; P.forEach(q=>{ cx+=q[0]; cy+=q[1]; }); cx/=n; cy/=n;
       o+=`<polygon points="${P.map(q=>f3(q[0])+','+f3(q[1])).join(' ')}" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:.06;stroke-dasharray:.14 .1;stroke-linejoin:round"/>`;
@@ -1092,18 +1207,21 @@ function toast(msg,ms){ const t=$('toast'); t.textContent=msg; t.hidden=false; c
 
 /* ---------- 도구 정의 ---------- */
 const STRIPS={
-  bond:[['single','단일결합'],['w','쐐기 결합 (앞으로)'],['h','점선 쐐기 (뒤로)'],['y','물결 결합'],['b','굵은 결합'],['d','점선 결합']],
-  multi:[['double','이중결합'],['triple','삼중결합']],
-  ring:[['r6a','벤젠'],['r5a','사이클로펜타다이엔 (콘쥬게이티드 5원자 고리)'],['r3','3원자 고리'],['r4','4원자 고리'],['r5','5원자 고리'],['r6','6원자 고리'],['r7','7원자 고리'],['r8','8원자 고리']],
-  arrow:[['fwd','반응 화살표'],['eq','평형 화살표'],['res','공명 화살표'],['retro','역합성 화살표']],
+  bond:[['single','단일결합'],['w','쐐기 결합 (앞으로)'],['h','점선 쐐기 (뒤로)'],['wo','빈 쐐기 결합'],['hh','해시 결합'],['y','물결 결합 (입체 미정)'],['b','굵은 결합'],['d','파선 결합'],['dt','점선 결합'],['ld','긴 파선 결합'],['g','회색 점선 (수소결합)'],['dd','일점쇄선 결합'],['ar','배위 결합 (화살표)']],
+  multi:[['double','이중결합'],['bd','굵은+얇은 이중결합'],['pd','실선+점선 이중결합'],['xd','양쪽 점선 이중결합'],['pdd','실선+일점쇄선 이중결합'],['pt','실선+점 이중결합'],['cx','교차 이중결합 (cis/trans 미정)'],['triple','삼중결합']],
+  ring:[['r6a','벤젠'],['r5a','사이클로펜타다이엔 (콘쥬게이티드 5원자 고리)'],['r3','3원자 고리'],['r4','4원자 고리'],['r5','5원자 고리'],['r6','6원자 고리'],['r7','7원자 고리'],['r8','8원자 고리'],['|'],['chair','의자형 사이클로헥세인'],['boat','보트형 사이클로헥세인']],
+  arrow:[['fwd','반응 화살표'],['big','반응 화살표 (큰 머리)'],['cond','반응 화살표 + 조건 글자'],['hu','반쪽 화살표 (위)'],['hd','반쪽 화살표 (아래)'],['open','열린 머리 화살표'],['eq','평형 화살표'],['res','공명 화살표'],['x','반응 안 됨 (✕)'],['sl','다단계 생략 (//)'],['retro','역합성 화살표'],
+    ['|'],['c1u','곡선 화살표 (얕게, 위)'],['c2u','곡선 화살표 (반원, 위)'],['c3u','곡선 화살표 (깊게, 위)'],['cO','원형 화살표'],['c1d','곡선 화살표 (얕게, 아래)'],['c2d','곡선 화살표 (반원, 아래)'],['c3d','곡선 화살표 (깊게, 아래)'],
+    ['|'],['f1u','반쪽 곡선 화살표 · 전자 1개 (얕게, 위)'],['f2u','반쪽 곡선 화살표 (반원, 위)'],['f3u','반쪽 곡선 화살표 (깊게, 위)'],['fO','반쪽 원형 화살표'],['f1d','반쪽 곡선 화살표 (얕게, 아래)'],['f2d','반쪽 곡선 화살표 (반원, 아래)'],['f3d','반쪽 곡선 화살표 (깊게, 아래)'],
+    ['|'],['b1u','양방향 곡선 화살표 (위)'],['b1d','양방향 곡선 화살표 (아래)'],['b2u','양방향 곡선 화살표 (반원)'],['bO','양방향 원형 화살표']],
   shape:[['rect','사각형'],['round','둥근 사각형'],['ellipse','타원']],
   bracket:[['sq','대괄호'],['paren','소괄호'],['curly','중괄호']],
-  charge:[['+','양전하 +1','plus'],['-','음전하 −1','minus'],['rad','라디칼','rad'],['0','전하 없애기','zero']],
+  charge:[['+','양전하 +1','plus'],['-','음전하 −1','minus'],['rad','라디칼','rad'],['rc','라디칼 양이온 •+','rc'],['ra','라디칼 음이온 •−','ra'],['lp','비공유 전자쌍 ••','lp'],['xd','전자 표시 ×•','ex1'],['dx','전자 표시 •×','dx'],['xx','전자 표시 ××','xx'],['0','전하·표시 없애기','zero']],
   select:[['rect','사각형 선택','select'],['lasso','올가미 선택','lasso']],
   rotate:[['ccw15','15° 반시계','ccw','15°'],['cw15','15° 시계','cw','15°'],['ccw90','90° 반시계','ccw','90°'],['cw90','90° 시계','cw','90°'],['180','180°','cw','180°']],
   flip:[['h','좌우 뒤집기','fh','좌우'],['v','상하 뒤집기','fv','상하']]
 };
-const RINGDEF={r6a:[6,true],r5a:[5,true],r3:[3],r4:[4],r5:[5],r6:[6],r7:[7],r8:[8]};
+const RINGDEF={r6a:[6,true],r5a:[5,true],r3:[3],r4:[4],r5:[5],r6:[6],r7:[7],r8:[8],chair:[6],boat:[6]};
 const ROT={ccw15:-15,cw15:15,ccw90:-90,cw90:90,'180':180};
 const HINTS={
   hand:'분자나 도형을 끌어서 옮깁니다. 화면 이동·확대는 두 손가락으로 합니다.',
@@ -1126,6 +1244,8 @@ function mkTB(id,label,icon,hasVar,extra){
   b.setAttribute('aria-label',label); b.title=label; b.innerHTML=icon?ic(I[icon]):(extra||''); return b;
 }
 function buildUI(){
+  for(const [v] of STRIPS.arrow) if(v!=='|'&&!I[v]) I[v]=arrowIcon(v);
+  I.chair=confIcon('chair'); I.boat=confIcon('boat');
   $('undo').innerHTML=ic(I.undo); $('redo').innerHTML=ic(I.redo); $('fileBtn').innerHTML=ic(I.dots);
   $('tplBtn').innerHTML=ic(I.book); $('fitBtn').innerHTML=ic(I.fit);
   for(const [row,defs] of [['trow1',ROW1],['trow2',ROW2]]) for(const [id,label,icon,v] of defs){
@@ -1172,6 +1292,11 @@ function buildStrip(){
   if(key==='color'){
     for(const [tok,label] of COLORS){ const b=document.createElement('button'); b.className='tb'; b.setAttribute('aria-label',label); b.title=label; b.setAttribute('aria-pressed',String(V.color===tok));
       b.innerHTML=`<span class="sw" style="background:var(--${tok})"></span>`; b.onclick=()=>{ V.color=tok; if(!selEmpty()) paintSet(sel,tok); buildStrip(); }; r.append(b); }
+    const sp=document.createElement('span'); sp.className='vsep'; sp.style.margin='0 3px'; r.append(sp);
+    for(const hex of CUSTOM_COLORS){ const b=document.createElement('button'); b.className='tb'; b.setAttribute('aria-label','사용자 지정 '+hex); b.title=hex; b.setAttribute('aria-pressed',String(V.color===hex));
+      b.innerHTML=`<span class="sw" style="background:${hex}"></span>`; b.onclick=()=>{ V.color=hex; if(!selEmpty()) paintSet(sel,hex); buildStrip(); }; r.append(b); }
+    const c=document.createElement('button'); c.className='act'; c.title='사용자 지정 색'; c.innerHTML='<span class="sw" style="width:18px;height:18px;background:conic-gradient(#e5322b,#f08a1c,#f2c81e,#2fa84f,#2f6fe0,#8a3fc4,#e5322b)"></span>색 추가';
+    c.onclick=openColorPicker; r.append(c);
     return;
   }
   if(key==='group'){
@@ -1181,11 +1306,75 @@ function buildStrip(){
   }
   const defs=STRIPS[key];
   if(!defs){ r.hidden=true; return; }
-  for(const [v,label,icon,txt] of defs){ const b=document.createElement('button'); b.className='tb'; b.setAttribute('aria-label',label); b.title=label;
+  for(const [v,label,icon,txt] of defs){ if(v==='|'){ const sp=document.createElement('span'); sp.className='vsep'; sp.style.margin='0 3px'; r.append(sp); continue; }
+    const b=document.createElement('button'); b.className='tb'; b.setAttribute('aria-label',label); b.title=label;
     b.setAttribute('aria-pressed',String(V[key]===v)); b.innerHTML=txt?`<span style="display:flex;flex-direction:column;align-items:center;gap:0;line-height:1">${ic(I[icon||v])}<small style="font-size:10px">${txt}</small></span>`:ic(I[icon||v]);
     if(txt) b.style.width='52px';
     b.onclick=()=>{ V[key]=v; if((key==='rotate'||key==='flip')&&!selEmpty()&&!(key==='rotate'&&oneAtom(sel))){ pushUndo(); if(key==='rotate'){ const F=selFrame(), t=ROT[v]*D2R; applyFrom(grabPos(sel),rotF(F.cx,F.cy,t),true); } else flipSet(sel,v); changed(); } buildStrip(); };
     r.append(b); }
+  if(key==='bracket'){ const sp=document.createElement('span'); sp.className='vsep'; sp.style.margin='0 3px'; r.append(sp);
+    for(const [m,label,icon] of [['+','괄호에 + 붙이기','brp'],['-','괄호에 − 붙이기','brm'],['ts','괄호에 ‡ (전이 상태) 붙이기','brd'],['0','괄호 표시 지우기','brx']]){
+      const b=document.createElement('button'); b.className='tb'; b.setAttribute('aria-label',label); b.title=label; b.setAttribute('aria-pressed',String(V.brm===m)); b.innerHTML=ic(I[icon]);
+      b.onclick=()=>{ const tg=[...sel.shapes].filter(j=>M.shapes[j]&&M.shapes[j].t==='br');
+        if(tg.length){ pushUndo(); tg.forEach(j=>markBr(M.shapes[j],m)); changed(); return; }
+        V.brm=V.brm===m?null:m; if(V.brm) toast('괄호를 탭하면 표시가 붙습니다.'); buildStrip(); };
+      r.append(b); } }
+}
+function applyCustomColor(hex){
+  CUSTOM_COLORS=[hex,...CUSTOM_COLORS.filter(c=>c!==hex)].slice(0,6); try{ localStorage.setItem('moldraw.colors',JSON.stringify(CUSTOM_COLORS)); }catch(x){}
+  V.color=hex; if(tool!=='color'&&selEmpty()){ tool='color'; strip='color'; syncPressed(); } if(!selEmpty()) paintSet(sel,hex); buildStrip(); }
+const hsv2rgb=(H,S,B)=>{ const f=n=>{ const k=(n+H/60)%6; return B-B*S*Math.max(0,Math.min(k,4-k,1)); }; return [f(5),f(3),f(1)].map(x=>Math.round(x*255)); };
+const rgb2hsv=(r,g,b)=>{ r/=255; g/=255; b/=255; const mx=Math.max(r,g,b), d=mx-Math.min(r,g,b); let H=0;
+  if(d){ H=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4; H*=60; if(H<0) H+=360; } return [H,mx?d/mx:0,mx]; };
+const toHex=c=>'#'+c.map(x=>x.toString(16).padStart(2,'0')).join('');
+const hexRgb=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16));
+function openColorPicker(){
+  let rgb=hexRgb(V.color[0]==='#'?V.color:'#2a6ad1'), [Hh,Ss,Bb]=rgb2hsv(...rgb);
+  const SZ=220, R=SZ/2-6, dpr=Math.min(2,window.devicePixelRatio||1);
+  const cv=h('canvas',{width:SZ*dpr,height:SZ*dpr,'aria-label':'색상환'}); cv.style.cssText=`width:${SZ}px;height:${SZ}px;touch-action:none;display:block;margin:0 auto;cursor:crosshair`;
+  const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  // 밝기 1 색상환 (한 번만 계산)
+  const W=Math.round(2*R*dpr), wheel=document.createElement('canvas'); wheel.width=W; wheel.height=W;
+  { const wc=wheel.getContext('2d'), im=wc.createImageData(W,W), c=W/2;
+    for(let y=0;y<W;y++) for(let x=0;x<W;x++){ const dx=x+.5-c, dy=y+.5-c, r=Math.hypot(dx,dy)/c; if(r>1) continue;
+      let a=Math.atan2(-dy,dx)*180/Math.PI; if(a<0) a+=360; const q=hsv2rgb(a,r,1), o=(y*W+x)*4; im.data[o]=q[0]; im.data[o+1]=q[1]; im.data[o+2]=q[2]; im.data[o+3]=255; }
+    wc.putImageData(im,0,0); }
+  const draw=()=>{ ctx.clearRect(0,0,SZ,SZ); ctx.drawImage(wheel,SZ/2-R,SZ/2-R,2*R,2*R);
+    ctx.beginPath(); ctx.arc(SZ/2,SZ/2,R,0,2*Math.PI); ctx.fillStyle=`rgba(0,0,0,${(1-Bb).toFixed(3)})`; ctx.fill();
+    ctx.strokeStyle='#dde1e5'; ctx.lineWidth=1; ctx.stroke();
+    const a=Hh*Math.PI/180, mx=SZ/2+Math.cos(a)*Ss*R, my=SZ/2-Math.sin(a)*Ss*R;
+    ctx.beginPath(); ctx.arc(mx,my,7,0,2*Math.PI); ctx.lineWidth=3; ctx.strokeStyle='#fff'; ctx.stroke(); ctx.lineWidth=1.2; ctx.strokeStyle='#1b1f24'; ctx.stroke(); };
+  const pick=e=>{ const b=cv.getBoundingClientRect(), dx=e.clientX-b.left-SZ/2, dy=e.clientY-b.top-SZ/2;
+    let a=Math.atan2(-dy,dx)*180/Math.PI; if(a<0) a+=360; Hh=a; Ss=Math.min(1,Math.hypot(dx,dy)/R); if(Bb<.05) Bb=1; fromHSV(); };
+  cv.addEventListener('pointerdown',e=>{ e.preventDefault(); cv.setPointerCapture(e.pointerId); pick(e); });
+  cv.addEventListener('pointermove',e=>{ if(cv.hasPointerCapture(e.pointerId)) pick(e); });
+  const sw=h('span'); sw.style.cssText='width:40px;height:40px;border-radius:9px;border:1px solid var(--line);flex:none';
+  const hexIn=h('input',{value:'',autocomplete:'off',spellcheck:false,maxLength:7,'aria-label':'HEX 코드'}); hexIn.style.fontFamily='var(--f-mono)';
+  const mkRow=(lab,max)=>{ const rg=h('input',{type:'range',min:0,max,step:1,'aria-label':lab}), nm=h('input',{type:'number',min:0,max,step:1,inputMode:'numeric','aria-label':lab+' 값'});
+    rg.style.cssText='width:100%;touch-action:none;accent-color:var(--accent)';
+    nm.style.cssText='height:36px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:0 6px;font:inherit;font-family:var(--f-mono);font-size:14px;width:100%';
+    const row=h('div',null,h('span',{className:'cap'},lab),rg,nm); row.style.cssText='display:grid;grid-template-columns:34px 1fr 64px;gap:10px;align-items:center';
+    return {row,rg,nm}; };
+  const bri=mkRow('밝기',100), ch=[mkRow('R',255),mkRow('G',255),mkRow('B',255)];
+  const sync=src=>{ const hx=toHex(rgb); sw.style.background=hx; if(src!=='hex') hexIn.value=hx.toUpperCase();
+    if(src!=='bri'){ bri.rg.value=Math.round(Bb*100); } if(src!=='brin') bri.nm.value=Math.round(Bb*100);
+    ch.forEach((c,k)=>{ if(src!=='rg'+k) c.rg.value=rgb[k]; if(src!=='nm'+k) c.nm.value=rgb[k]; });
+    const full=toHex(hsv2rgb(Hh,Ss,1)); bri.rg.style.background='none'; bri.row.title=full;
+    draw(); };
+  const fromHSV=src=>{ rgb=hsv2rgb(Hh,Ss,Bb); sync(src); };
+  const fromRGB=src=>{ const [a,b,c]=rgb2hsv(...rgb); if(b>0&&c>0) Hh=a; if(c>0) Ss=b; Bb=c; sync(src); };
+  bri.rg.addEventListener('input',()=>{ Bb=+bri.rg.value/100; fromHSV('bri'); });
+  bri.nm.addEventListener('input',()=>{ const v=Math.max(0,Math.min(100,+bri.nm.value||0)); Bb=v/100; fromHSV('brin'); });
+  ch.forEach((c,k)=>{ c.rg.addEventListener('input',()=>{ rgb[k]=+c.rg.value; fromRGB('rg'+k); });
+    c.nm.addEventListener('input',()=>{ if(c.nm.value==='') return; rgb[k]=Math.max(0,Math.min(255,Math.round(+c.nm.value)||0)); fromRGB('nm'+k); }); });
+  hexIn.addEventListener('input',()=>{ let v=hexIn.value.trim(); if(v[0]!=='#') v='#'+v; if(/^#[0-9a-f]{3}$/i.test(v)) v='#'+[...v.slice(1)].map(x=>x+x).join('');
+    if(/^#[0-9a-f]{6}$/i.test(v)){ rgb=hexRgb(v.toLowerCase()); fromRGB('hex'); } });
+  const apply=()=>{ applyCustomColor(toHex(rgb)); closeSheet(); };
+  hexIn.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); apply(); } });
+  const hexRow=h('div',{className:'field'},sw,hexIn); hexRow.style.alignItems='center';
+  openSheet('색 고르기',[cv,bri.row,h('div',{className:'cap'},'RGB'),...ch.map(c=>c.row),hexRow,
+    h('div',{className:'acts'},h('button',{className:'btn primary',type:'button',on:{click:apply}},'이 색 쓰기'),h('button',{className:'btn',type:'button',on:{click:closeSheet}},'취소'))]);
+  sync();
 }
 function paintSet(S,tok){
   pushUndo(); const k=tok==='ink'?undefined:tok;
@@ -1219,17 +1408,24 @@ function tap(hit){
       M.atoms[b.a].h=null; M.atoms[b.b].h=null; return true; }
     if(hit.type==='none'){ pushUndo(); const i=newAtom(hit.x,hit.y), j=newAtom(hit.x+L*Math.cos(-Math.PI/6),hit.y+L*Math.sin(-Math.PI/6)); link(i,j,1,s); return true; }
     return false; }
-  case 'multi': { const o=V.multi==='triple'?3:2;
-    if(hit.type==='atom'){ pushUndo(); extendFrom(hit.i,o,'C'); return true; }
-    if(hit.type==='bond'){ pushUndo(); const b=M.bonds[hit.k]; delete b.s; b.o=b.o===o?1:o; M.atoms[b.a].h=null; M.atoms[b.b].h=null; return true; }
-    if(hit.type==='none'){ pushUndo(); const i=newAtom(hit.x,hit.y), j=newAtom(hit.x+L*Math.cos(-Math.PI/6),hit.y+L*Math.sin(-Math.PI/6)); link(i,j,o); return true; }
+  case 'multi': { const o=V.multi==='triple'?3:2, s2=o===2&&V.multi!=='double'?V.multi:null;
+    if(hit.type==='atom'){ pushUndo(); extendFrom(hit.i,o,'C',s2); return true; }
+    if(hit.type==='bond'){ pushUndo(); const b=M.bonds[hit.k]; if(b.o===o&&(b.s||null)===s2){ b.o=1; delete b.s; } else { b.o=o; if(s2) b.s=s2; else delete b.s; } M.atoms[b.a].h=null; M.atoms[b.b].h=null; return true; }
+    if(hit.type==='none'){ pushUndo(); const i=newAtom(hit.x,hit.y), j=newAtom(hit.x+L*Math.cos(-Math.PI/6),hit.y+L*Math.sin(-Math.PI/6)); link(i,j,o,s2); return true; }
     return false; }
   case 'ring': { if(hit.type==='shape'||hit.type==='handle') return false; const p=ringPv(hit,null); pushUndo(); placeRingPts(p.pts,p.ar); return true; }
   case 'text': openText(hit); return false;
-  case 'arrow': if(hit.type!=='none') return false; pushUndo(); M.shapes.push({t:'arrow',v:V.arrow,x1:hit.x-1,y1:hit.y,x2:hit.x+1,y2:hit.y}); return true;
-  case 'shape': case 'bracket': if(hit.type!=='none') return false; pushUndo(); M.shapes.push({t:tool==='shape'?'rect':'br',v:V[tool],x1:hit.x-1.2,y1:hit.y-.8,x2:hit.x+1.2,y2:hit.y+.8}); return true;
+  case 'arrow': if(hit.type==='shape'&&M.shapes[hit.j].t==='arrow'){ if(!isCurve(M.shapes[hit.j].v)) openCond(hit.j); return false; }
+    if(hit.type!=='none') return false; pushUndo(); { const w=V.arrow==='cond'?1.3:1; M.shapes.push({t:'arrow',v:V.arrow,x1:hit.x-w,y1:hit.y,x2:hit.x+w,y2:hit.y}); }
+    if(V.arrow==='cond') setTimeout(()=>openCond(M.shapes.length-1),0); return true;
+  case 'shape': case 'bracket': if(tool==='bracket'&&V.brm&&hit.type==='shape'&&M.shapes[hit.j].t==='br'){ pushUndo(); markBr(M.shapes[hit.j],V.brm); return true; } if(hit.type!=='none') return false; pushUndo(); M.shapes.push({t:tool==='shape'?'rect':'br',v:V[tool],x1:hit.x-1.2,y1:hit.y-.8,x2:hit.x+1.2,y2:hit.y+.8}); return true;
   case 'charge': { if(hit.type!=='atom'||M.atoms[hit.i].ab) return false; pushUndo(); const a=M.atoms[hit.i];
-    if(V.charge==='+') a.c=Math.min(3,(a.c||0)+1); else if(V.charge==='-') a.c=Math.max(-3,(a.c||0)-1); else if(V.charge==='rad') a.r=a.r?0:1; else { a.c=0; a.r=0; }
+    const v=V.charge;
+    if(v==='+') a.c=Math.min(3,(a.c||0)+1); else if(v==='-') a.c=Math.max(-3,(a.c||0)-1); else if(v==='rad') a.r=a.r?0:1;
+    else if(v==='rc'||v==='ra'){ const q=v==='rc'?1:-1, on=a.r&&a.c===q; a.r=on?0:1; a.c=on?0:q; }
+    else if(v==='lp') a.lp=a.lp?0:1;
+    else if(v==='xd'||v==='dx'||v==='xx'){ if(a.m===v) delete a.m; else a.m=v; }
+    else { a.c=0; a.r=0; a.lp=0; delete a.m; }
     a.h=null; return true; }
   case 'color': { if(hit.type==='none') return false; const k=V.color==='ink'?undefined:V.color; pushUndo();
     if(hit.type==='atom') M.atoms[hit.i].k=k; else if(hit.type==='bond') M.bonds[hit.k].k=k; else M.shapes[hit.j].k=k; return true; }
@@ -1313,7 +1509,7 @@ svg.addEventListener('pointermove',e=>{
   else if(drag.mode==='rot'){ let a=Math.atan2(m.y-drag.c[1],m.x-drag.c[0])-drag.a0; if(h.type==='handle') a=Math.atan2(m.y-drag.c[1],m.x-drag.c[0])+Math.PI/2-(drag.F0?drag.F0.ang:0); const st=V.rotate.endsWith('15')?15:1; a=Math.round(a/D2R/st)*st*D2R; applyFrom(drag.G,rotF(drag.c[0],drag.c[1],a),true); render(); }
   else if(drag.mode==='draw'){ let sx,sy,si=-1; if(h.type==='atom'){ sx=M.atoms[h.i].x; sy=M.atoms[h.i].y; si=h.i; } else { sx=drag.sm.x; sy=drag.sm.y; }
     const end=snapEnd(sx,sy,p.px,p.py,si); drag.pv={kind:'bond',x1:sx,y1:sy,x2:end.x,y2:end.y,end,si}; render(); }
-  else if(drag.mode==='arrow'){ let x2=m.x, y2=m.y; const t=Math.atan2(y2-drag.sm.y,x2-drag.sm.x), r=Math.hypot(x2-drag.sm.x,y2-drag.sm.y), sn=Math.round(t/(Math.PI/12))*(Math.PI/12); x2=drag.sm.x+r*Math.cos(sn); y2=drag.sm.y+r*Math.sin(sn); drag.pv={kind:'arrow',x1:drag.sm.x,y1:drag.sm.y,x2,y2}; render(); }
+  else if(drag.mode==='arrow'){ let x2=m.x, y2=m.y; const t=Math.atan2(y2-drag.sm.y,x2-drag.sm.x), r=Math.hypot(x2-drag.sm.x,y2-drag.sm.y), sn=Math.round(t/(Math.PI/12))*(Math.PI/12); if(!isCurve(V.arrow)){ x2=drag.sm.x+r*Math.cos(sn); y2=drag.sm.y+r*Math.sin(sn); } drag.pv={kind:'arrow',x1:drag.sm.x,y1:drag.sm.y,x2,y2}; render(); }
   else if(drag.mode==='box'||drag.mode==='marq'){ drag.pv={kind:drag.mode,x1:drag.sm.x,y1:drag.sm.y,x2:m.x,y2:m.y}; render(); }
   else if(drag.mode==='lasso'){ drag.pts.push(m); drag.pv={kind:'lasso',pts:drag.pts}; render(); }
   drag.last=p;
@@ -1331,10 +1527,10 @@ function endPtr(e,cancelled){
   if(!d.moved){ if(tap(d.hit)) changed(); else render(); return; }
   if(d.mode==='move'||d.mode==='rot'){ undoS.push(d.snap); redoS.length=0; changed(); return; }
   if(d.mode==='draw'&&d.pv){
-    pushUndo(); const p=d.pv, el=tool==='atom'?V.atom:'C', o=tool==='multi'?(V.multi==='triple'?3:2):1, s=tool==='bond'&&V.bond!=='single'?V.bond:null;
+    pushUndo(); const p=d.pv, el=tool==='atom'?V.atom:'C', o=tool==='multi'?(V.multi==='triple'?3:2):1, s=tool==='bond'&&V.bond!=='single'?V.bond:tool==='multi'&&V.multi!=='double'&&V.multi!=='triple'?V.multi:null;
     const i=p.si>=0?p.si:atomAt(p.x1,p.y1,'C'), j=p.end.i>=0?p.end.i:atomAt(p.x2,p.y2,el);
     if(i!==j){ link(i,j,o,s); if(tool==='atom'&&el==='C'){ M.atoms[j].lab=1; if(p.si<0) M.atoms[i].lab=1; } } changed(); return; }
-  if(d.mode==='arrow'&&d.pv&&Math.hypot(d.pv.x2-d.pv.x1,d.pv.y2-d.pv.y1)>.3){ pushUndo(); M.shapes.push({t:'arrow',v:V.arrow,x1:d.pv.x1,y1:d.pv.y1,x2:d.pv.x2,y2:d.pv.y2}); changed(); return; }
+  if(d.mode==='arrow'&&d.pv&&Math.hypot(d.pv.x2-d.pv.x1,d.pv.y2-d.pv.y1)>.3){ pushUndo(); M.shapes.push({t:'arrow',v:V.arrow,x1:d.pv.x1,y1:d.pv.y1,x2:d.pv.x2,y2:d.pv.y2}); changed(); if(V.arrow==='cond') openCond(M.shapes.length-1); return; }
   if(d.mode==='box'&&d.pv&&Math.abs(d.pv.x2-d.pv.x1)>.2&&Math.abs(d.pv.y2-d.pv.y1)>.2){ pushUndo(); M.shapes.push({t:tool==='shape'?'rect':'br',v:V[tool],x1:d.pv.x1,y1:d.pv.y1,x2:d.pv.x2,y2:d.pv.y2}); changed(); return; }
   if(d.mode==='marq'||d.mode==='lasso'){
     let inside;
@@ -1375,6 +1571,16 @@ function closeSheet(){ $('sheetBg').hidden=true; }
 $('sheetClose').onclick=closeSheet;
 $('sheetBg').addEventListener('click',e=>{ if(e.target.id==='sheetBg') closeSheet(); });
 
+function openCond(j){
+  const s=M.shapes[j]; if(!s||s.t!=='arrow') return;
+  const inp=(id,v,ph)=>h('input',{id,value:v||'',autocomplete:'off',spellcheck:false,placeholder:ph});
+  const t1=inp('condTop',s.top,'화살표 위 (시약 · 예: H₂SO₄)'), t2=inp('condBot',s.bot,'화살표 아래 (조건 · 예: 가열, 2 h)');
+  const apply=()=>{ const a=t1.value.trim(), b=t2.value.trim(); if((s.top||'')===a&&(s.bot||'')===b) return closeSheet();
+    pushUndo(); if(a) s.top=a; else delete s.top; if(b) s.bot=b; else delete s.bot; changed(); closeSheet(); };
+  [t1,t2].forEach(t=>t.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); apply(); } }));
+  openSheet('반응 조건',[h('div',{className:'field'},t1),h('div',{className:'field'},t2),h('p',{className:'note'},'비워 두면 그 줄은 지워집니다. 화살표 도구로 화살표를 탭하면 다시 고칠 수 있습니다.'),
+    h('div',{className:'acts'},h('button',{className:'btn primary',type:'button',on:{click:apply}},'적용'))],'condTop');
+}
 function openText(hit){
   const onAtom=hit.type==='atom', onText=hit.type==='shape'&&M.shapes[hit.j].t==='text';
   if(hit.type==='bond'||(hit.type==='shape'&&!onText)) return;
@@ -1537,7 +1743,7 @@ function openInfo(){
 }
 // box: {x1,y1,x2,y2} 모델 좌표. 없으면 전체
 function exportSVG(box){
-  const P=t=>PAL_LIGHT[t]||'#1b1f24';
+  const P=t=>t&&t[0]==='#'?t:PAL_LIGHT[t]||'#1b1f24';
   const {S,B}=build(P,"Helvetica, Arial, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif");
   const b=box||setBBox(allSet(),.7); if(!b) return null;
   const sc=60, w=Math.ceil((b.x2-b.x1)*sc), hh=Math.ceil((b.y2-b.y1)*sc);
