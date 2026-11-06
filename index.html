@@ -798,8 +798,8 @@ const I={
   b:'<path d="M5 19L19 5" stroke-width="4"/>', d:'<path d="M5 19L19 5" stroke-dasharray="1.6 2.6"/>',
   double:'<path d="M4 17L17 4M7 20L20 7"/>', triple:'<path d="M3 15L15 3M5.6 18.4L18.4 5.6M9 21L21 9"/>',
   text:'<path d="M6 20L12 4l6 16M8.2 14.5h7.6"/>',
-  fwd:'<path d="M3 12h16"/><path d="M15 8l4 4-4 4"/>', eq:'<path d="M3 9.5h17l-4-3.5"/><path d="M21 14.5H4l4 3.5"/>',
-  res:'<path d="M3.5 12h17M7.5 8l-4 4 4 4M16.5 8l4 4-4 4"/>', retro:'<path d="M3 9.5h13M3 14.5h13M14 6l6 6-6 6"/>',
+ eq:'<path d="M3 9.5h17l-4-3.5"/><path d="M21 14.5H4l4 3.5"/>',
+ retro:'<path d="M3 9.5h13M3 14.5h13M14 6l6 6-6 6"/>',
   rect:'<rect x="4" y="6.5" width="16" height="11"/>', round:'<rect x="4" y="6.5" width="16" height="11" rx="3.5"/>', ellipse:'<ellipse cx="12" cy="12" rx="8.5" ry="6.5"/>',
   sq:'<path d="M8.5 4H5v16h3.5M15.5 4H19v16h-3.5"/>', paren:'<path d="M8 4C4 8 4 16 8 20M16 4c4 4 4 12 0 16"/>',
   curly:'<path d="M8.5 4C6 4 6.5 6 6.5 8.5S6 12 4.5 12c1.5 0 2 1 2 3.5S6 20 8.5 20M15.5 4c2.5 0 2 2 2 4.5s.5 3.5 2 3.5c-1.5 0-2 1-2 3.5s.5 4.5-2 4.5"/>',
@@ -808,8 +808,8 @@ const I={
   align:'<path d="M5 4v16"/><rect x="8" y="6.5" width="7" height="4"/><rect x="8" y="13.5" width="11" height="4"/>',
   fh:'<path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L4 12l5 5z"/><path d="M15 7l5 5-5 5z" fill="currentColor"/>',
   fv:'<path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-5 5 5z"/><path d="M7 15l5 5 5-5z" fill="currentColor"/>',
-  rotate:'<path d="M19 12a7 7 0 11-2.05-4.95"/><path d="M17.5 3v4.2h-4.2"/>',
-  ccw:'<path d="M5 12a7 7 0 102.05-4.95"/><path d="M6.5 3v4.2h4.2"/>', cw:'<path d="M19 12a7 7 0 11-2.05-4.95"/><path d="M17.5 3v4.2h-4.2"/>',
+  rotate:'<path d="M6.48 17.23A7.2 7.2 0 1 1 18.34 16.02"/><path d="M16.13 18.50L16.86 12.50L18.28 15.26L21.36 15.49z" fill="currentColor" stroke-width=".6" stroke-linejoin="miter"/>',
+  ccw:'<path d="M17.52 17.23A7.2 7.2 0 1 0 5.66 16.02"/><path d="M7.87 18.50L7.14 12.50L5.72 15.26L2.64 15.49z" fill="currentColor" stroke-width=".6" stroke-linejoin="miter"/>', cw:'<path d="M6.48 17.23A7.2 7.2 0 1 1 18.34 16.02"/><path d="M16.13 18.50L16.86 12.50L18.28 15.26L21.36 15.49z" fill="currentColor" stroke-width=".6" stroke-linejoin="miter"/>',
   info:'<path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z"/><path d="M12 11v5.5"/><circle cx="12" cy="8" r=".7" fill="currentColor"/>',
   more:'<circle cx="12" cy="12" r="9"/><circle cx="8" cy="12" r=".9" fill="currentColor"/><circle cx="12" cy="12" r=".9" fill="currentColor"/><circle cx="16" cy="12" r=".9" fill="currentColor"/>',
   hand:'<path d="M8 13V6.5a1.5 1.5 0 013 0V11"/><path d="M11 10.5V5a1.5 1.5 0 013 0v5.5"/><path d="M14 10.5V6.5a1.5 1.5 0 013 0V14c0 4-2.5 7-6 7-2.6 0-4.1-1.3-5.6-3.6L4 14.6a1.4 1.4 0 012.2-1.7L8 15"/>',
@@ -827,12 +827,12 @@ const I={
   clean:'<path d="M4 20l7-7"/><path d="M13 4l1.2 2.8L17 8l-2.8 1.2L13 12l-1.2-2.8L9 8l2.8-1.2z"/><path d="M18.5 13l.7 1.5 1.5.7-1.5.7-.7 1.5-.7-1.5-1.5-.7 1.5-.7z"/>',
   all:'<rect x="4" y="4" width="16" height="16" stroke-dasharray="2.5 2.2"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
   smiles:'<path d="M8 6L3 12l5 6M16 6l5 6-5 6M14 4l-4 16"/>',
-  color:'<circle cx="12" cy="12" r="7.5" stroke="#e5322b" stroke-width="3" stroke-dasharray="0 0.000 7.904 47.124" transform="rotate(-90 12 12)"/><circle cx="12" cy="12" r="7.5" stroke="#f08a1c" stroke-width="3" stroke-dasharray="0 7.854 7.904 47.124" transform="rotate(-90 12 12)"/><circle cx="12" cy="12" r="7.5" stroke="#f2c81e" stroke-width="3" stroke-dasharray="0 15.708 7.904 47.124" transform="rotate(-90 12 12)"/><circle cx="12" cy="12" r="7.5" stroke="#2fa84f" stroke-width="3" stroke-dasharray="0 23.562 7.904 47.124" transform="rotate(-90 12 12)"/><circle cx="12" cy="12" r="7.5" stroke="#2f6fe0" stroke-width="3" stroke-dasharray="0 31.416 7.904 47.124" transform="rotate(-90 12 12)"/><circle cx="12" cy="12" r="7.5" stroke="#8a3fc4" stroke-width="3" stroke-dasharray="0 39.270 7.904 47.124" transform="rotate(-90 12 12)"/>'
+  color:'<path d="M11.921 4.500A7.5 7.5 0 0 1 18.534 8.318" stroke="#e5322b" stroke-width="3" stroke-linecap="butt"/><path d="M18.456 8.182A7.5 7.5 0 0 1 18.456 15.818" stroke="#f08a1c" stroke-width="3" stroke-linecap="butt"/><path d="M18.534 15.682A7.5 7.5 0 0 1 11.921 19.500" stroke="#f2c81e" stroke-width="3" stroke-linecap="butt"/><path d="M12.079 19.500A7.5 7.5 0 0 1 5.466 15.682" stroke="#2fa84f" stroke-width="3" stroke-linecap="butt"/><path d="M5.544 15.818A7.5 7.5 0 0 1 5.544 8.182" stroke="#2f6fe0" stroke-width="3" stroke-linecap="butt"/><path d="M5.466 8.318A7.5 7.5 0 0 1 12.079 4.500" stroke="#8a3fc4" stroke-width="3" stroke-linecap="butt"/>',
 };
 Object.assign(I,{
   hh:(()=>{ let t=''; for(let k=0;k<7;k++){ const q=k/6, px=5+14*q, py=19-14*q; t+=`<path d="M${(px-1.5).toFixed(2)} ${(py-1.5).toFixed(2)}L${(px+1.5).toFixed(2)} ${(py+1.5).toFixed(2)}"/>`; } return t; })(),
   g:'<path d="M5 19L19 5" stroke-dasharray="2.2 2" opacity=".45"/>', ld:'<path d="M5 19L19 5" stroke-dasharray="4.6 2.6"/>',
-  ar:'<path d="M5 19L16 8"/><path d="M19 5L17 10.1 13.9 7z" fill="currentColor"/>', wo:'<path d="M5 19L18 4.3 19.7 6z"/>',
+  ar:'<path d="M5 19L16.2 7.8"/><path d="M19 5L16.7 11.2 15.9 8.1 12.8 7.3z" fill="currentColor" stroke-width=".6" stroke-linejoin="miter"/>', wo:'<path d="M5 19L18 4.3 19.7 6z"/>',
   dd:'<path d="M5 19L19 5" stroke-dasharray="4 1.6 1 1.6"/>',
   brp:'<path d="M6.5 6H4v13h2.5M13.5 6H16v13h-2.5"/><path d="M20 3.5v5M17.5 6h5"/>', brm:'<path d="M6.5 6H4v13h2.5M13.5 6H16v13h-2.5"/><path d="M17.5 6h5"/>',
   brd:'<path d="M6.5 6H4v13h2.5M13.5 6H16v13h-2.5"/><path d="M20 2.5v8M18 4.5h4M18 8h4"/>', brx:'<path d="M6.5 6H4v13h2.5M13.5 6H16v13h-2.5"/><path d="M18 4l4 4M22 4l-4 4"/>', dt:'<path d="M5 19L19 5" stroke-dasharray=".1 2.7" stroke-width="2"/>',
@@ -845,7 +845,7 @@ Object.assign(I,{
   ex1:'<path d="M5.5 9.5l5 5M10.5 9.5l-5 5"/><circle cx="16.5" cy="12" r="1.8" fill="currentColor" stroke="none"/>',
   dx:'<circle cx="7.5" cy="12" r="1.8" fill="currentColor" stroke="none"/><path d="M13.5 9.5l5 5M18.5 9.5l-5 5"/>',
   xx:'<path d="M4 9.5l5 5M9 9.5l-5 5M15 9.5l5 5M20 9.5l-5 5"/>',
-  cond:'<text x="9.5" y="9" font-size="7" text-anchor="middle" stroke="none" fill="currentColor" font-family="sans-serif">Aa</text><text x="9.5" y="20.5" font-size="7" text-anchor="middle" stroke="none" fill="currentColor" font-family="sans-serif">Aa</text><path d="M2.5 12.5h16"/><path d="M17 9.5l4.5 3-4.5 3z" fill="currentColor"/>',
+  cond:'<text x="9.5" y="9" font-size="7" text-anchor="middle" stroke="none" fill="currentColor" font-family="sans-serif">Aa</text><text x="9.5" y="20.5" font-size="7" text-anchor="middle" stroke="none" fill="currentColor" font-family="sans-serif">Aa</text><path d="M2.5 12.5h15.6"/><path d="M21.5 12.5L15.6 15.3 17.4 12.5 15.6 9.7z" fill="currentColor" stroke-width=".6" stroke-linejoin="miter"/>',
 });
 for(const n of [3,4,5,6,7,8]) I['r'+n]=polyIcon(n,false);
 I.r6a=polyIcon(6,true); I.r5a=polyIcon(5,true);
@@ -1006,36 +1006,41 @@ function drawArrow(s,P,FONT,o){
   const TRI=P_=>`<polygon points="${P_.map(pt).join(' ')}" style="fill:${col};stroke:${col};stroke-width:${sw*.4};stroke-linejoin:miter"/>`;
   // 머리: tip, 진행 방향(dx,dy), 종류, 반쪽일 때 쪽 벡터
   const head=(tx,ty,dx,dy,kind,hl,hw,side)=>{ const px=-dy, py=dx;
-    if(kind==='full') return TRI([[tx,ty],[tx-dx*hl+px*hw,ty-dy*hl+py*hw],[tx-dx*hl-px*hw,ty-dy*hl-py*hw]]);
+    if(kind==='full') return TRI([[tx,ty],[tx-dx*hl+px*hw,ty-dy*hl+py*hw],[tx-dx*hl*.72,ty-dy*hl*.72],[tx-dx*hl-px*hw,ty-dy*hl-py*hw]]); /* 뒤가 오목하게 갈라진 머리 */
     if(kind==='half') return TRI([[tx,ty],[tx-dx*hl+side[0]*hw*1.5,ty-dy*hl+side[1]*hw*1.5],[tx-dx*hl*.7,ty-dy*hl*.7]]);
     return PL([[tx-dx*hl*1.1+px*hw*1.5,ty-dy*hl*1.1+py*hw*1.5],[tx,ty],[tx-dx*hl*1.1-px*hw*1.5,ty-dy*hl*1.1-py*hw*1.5]]); };
   let S='';
   if(G.curve){
-    const P_=G.pts, n=P_.length, hl=Math.min(.26,len*.3)*hs, hw=.1*hs, kind=G.kind==='f'?'half':'full';
+    const P_=G.pts, n=P_.length, hl=Math.min(.26,len*.3)*hs, kind=G.kind==='f'?'half':'full', hw=(kind==='full'?.135:.1)*hs;
     const dir=(a,b)=>{ const dx=a[0]-b[0], dy=a[1]-b[1], l=Math.hypot(dx,dy)||1; return [dx/l,dy/l]; };
     let cx=0,cy=0; P_.forEach(q=>{ cx+=q[0]; cy+=q[1]; }); cx/=n; cy/=n;
     const outSide=(t,d)=>{ let sx=-d[1], sy=d[0]; if(sx*(cx-t[0])+sy*(cy-t[1])>0){ sx=-sx; sy=-sy; } return [sx,sy]; };
     const trim=(arr,fromEnd,amt)=>{ const a=fromEnd?arr.slice():arr.slice().reverse(); let acc=0; while(a.length>2){ const l=Math.hypot(a[a.length-1][0]-a[a.length-2][0],a[a.length-1][1]-a[a.length-2][1]); if(acc+l>amt) break; acc+=l; a.pop(); } return fromEnd?a:a.reverse(); };
-    let line=P_; if(kind==='full') line=trim(line,true,hl*.6); if(G.kind==='b') line=trim(line,false,hl*.6);
-    S+=PL(line);
-    const de=dir(P_[n-1],P_[n-3]); S+=head(P_[n-1][0],P_[n-1][1],de[0],de[1],kind,hl,hw,outSide(P_[n-1],de));
-    if(G.kind==='b'){ const ds=dir(P_[0],P_[2]); S+=head(P_[0][0],P_[0][1],ds[0],ds[1],'full',hl,hw); }
+    let line=P_; if(kind==='full') line=trim(line,true,hl*.62); if(G.kind==='b') line=trim(line,false,hl*.62);
+    /* 전자쌍 머리는 끝에서 머리 길이만큼 떨어진 곡선 위 점을 향하게 놓아 양쪽 날개가 곡선에 대해 대칭이 되게 한다 */
+    const back=(arr,amt)=>{ let acc=0; for(let k=arr.length-1;k>0;k--){ acc+=Math.hypot(arr[k][0]-arr[k-1][0],arr[k][1]-arr[k-1][1]); if(acc>=amt) return arr[k-1]; } return arr[0]; };
+    const de=kind==='full'?dir(P_[n-1],back(P_,hl)):dir(P_[n-1],P_[n-3]);
+    S+=PL(line); S+=head(P_[n-1][0],P_[n-1][1],de[0],de[1],kind,hl,hw,outSide(P_[n-1],de));
+    if(G.kind==='b'){ const ds=dir(P_[0],back(P_.slice().reverse(),hl)); S+=head(P_[0][0],P_[0][1],ds[0],ds[1],'full',hl,hw); }
     return S;
   }
   const hl=Math.min(.3,len*.4)*hs, hw=.12*hs;
   if(v==='eq'){ const o_=.07;
-    S+=LN(s.x1+nx*o_,s.y1+ny*o_,s.x2+nx*o_-ux*.05,s.y2+ny*o_-uy*.05)+LN(s.x2+nx*o_,s.y2+ny*o_,s.x2+nx*o_-ux*hl+nx*hw*1.3,s.y2+ny*o_-uy*hl+ny*hw*1.3);
-    S+=LN(s.x2-nx*o_,s.y2-ny*o_,s.x1-nx*o_+ux*.05,s.y1-ny*o_+uy*.05)+LN(s.x1-nx*o_,s.y1-ny*o_,s.x1-nx*o_+ux*hl-nx*hw*1.3,s.y1-ny*o_+uy*hl-ny*hw*1.3); }
-  else if(v==='retro'){ const o_=.08, e=hl*.9;
+    /* 각 줄을 '꼬리 → 끝 → 갈고리' 한 획으로 그려 끝이 뾰족하게 맞물리게 한다 (따로 그리면 이음새가 튀어나온다) */
+    /* 끝은 평평하게(bevel): 꺾이는 점을 갈고리 굵기만큼 당겨 두어 끝이 맞은편 줄의 꼬리와 같은 자리에서 끝난다 */
+    const J=';stroke-linejoin:bevel', sn=1.3*hw/Math.hypot(hl,1.3*hw), pb=sw/2*sn;
+    S+=PL([[s.x1+nx*o_,s.y1+ny*o_],[s.x2+nx*o_-ux*pb,s.y2+ny*o_-uy*pb],[s.x2+nx*o_-ux*hl+nx*hw*1.3,s.y2+ny*o_-uy*hl+ny*hw*1.3]],J);
+    S+=PL([[s.x2-nx*o_,s.y2-ny*o_],[s.x1-nx*o_+ux*pb,s.y1-ny*o_+uy*pb],[s.x1-nx*o_+ux*hl-nx*hw*1.3,s.y1-ny*o_+uy*hl-ny*hw*1.3]],J); }
+  else if(v==='retro'){ const o_=.08, e=1.5*hl*o_/(2.2*hw); /* 두 줄은 머리의 팔과 만나는 자리에서 끝난다 */
     S+=LN(s.x1+nx*o_,s.y1+ny*o_,s.x2+nx*o_-ux*e,s.y2+ny*o_-uy*e)+LN(s.x1-nx*o_,s.y1-ny*o_,s.x2-nx*o_-ux*e,s.y2-ny*o_-uy*e);
-    S+=PL([[s.x2-ux*hl*1.5+nx*hw*2.2,s.y2-uy*hl*1.5+ny*hw*2.2],[s.x2,s.y2],[s.x2-ux*hl*1.5-nx*hw*2.2,s.y2-uy*hl*1.5-ny*hw*2.2]],';stroke-linejoin:miter'); }
+    S+=PL([[s.x2-ux*hl*1.5+nx*hw*2.2,s.y2-uy*hl*1.5+ny*hw*2.2],[s.x2,s.y2],[s.x2-ux*hl*1.5-nx*hw*2.2,s.y2-uy*hl*1.5-ny*hw*2.2]],';stroke-linejoin:miter;stroke-miterlimit:12'); }
   else if(v==='hu'||v==='hd'){ const sd=v==='hu'?[nx,ny]:[-nx,-ny]; S+=LN(s.x1,s.y1,s.x2-ux*.02,s.y2-uy*.02)+head(s.x2,s.y2,ux,uy,'half',hl,hw,sd); }
   else if(v==='open'){ S+=LN(s.x1,s.y1,s.x2,s.y2)+head(s.x2,s.y2,ux,uy,'open',hl,hw); }
-  else { const big=v==='big', H=big?hl*1.45:hl, W=big?hw*1.5:hw, a0=v==='res'?H*.8:0;
-    S+=LN(s.x1+ux*a0,s.y1+uy*a0,s.x2-ux*H*.8,s.y2-uy*H*.8)+head(s.x2,s.y2,ux,uy,'full',H,W); if(v==='res') S+=head(s.x1,s.y1,-ux,-uy,'full',H,W);
-    const mx=(s.x1+s.x2)/2-ux*hl*.3, my=(s.y1+s.y2)/2-uy*hl*.3, c=.11*hs;
+  else { const big=v==='big', H=big?hl*1.45:hl, W=big?hw*1.5:hw, a0=v==='res'?H*.62:0;
+    S+=LN(s.x1+ux*a0,s.y1+uy*a0,s.x2-ux*H*.62,s.y2-uy*H*.62)+head(s.x2,s.y2,ux,uy,'full',H,W); if(v==='res') S+=head(s.x1,s.y1,-ux,-uy,'full',H,W);
+    const mx=(s.x1+s.x2)/2-ux*hl*.3, my=(s.y1+s.y2)/2-uy*hl*.3, c=.11*(o.ms||hs);
     if(v==='x') S+=LN(mx-(ux+nx)*c,my-(uy+ny)*c,mx+(ux+nx)*c,my+(uy+ny)*c)+LN(mx-(ux-nx)*c,my-(uy-ny)*c,mx+(ux-nx)*c,my+(uy-ny)*c);
-    if(v==='sl') for(const g of [-1,1]){ const ox=mx+ux*g*.055*hs, oy=my+uy*g*.055*hs; S+=LN(ox-nx*c*1.4-ux*c*.6,oy-ny*c*1.4-uy*c*.6,ox+nx*c*1.4+ux*c*.6,oy+ny*c*1.4+uy*c*.6); } }
+    if(v==='sl') for(const g of [-1,1]){ const ox=mx+ux*g*.055*(o.ms||hs), oy=my+uy*g*.055*(o.ms||hs); S+=LN(ox-nx*c*1.4-ux*c*.6,oy-ny*c*1.4-uy*c*.6,ox+nx*c*1.4+ux*c*.6,oy+ny*c*1.4+uy*c*.6); } }
   if((s.top||s.bot)&&FONT){ const c=condPos(s,G), T=(q,a,t)=>`<text transform="translate(${f3(q[0])} ${f3(q[1])}) scale(.01)" text-anchor="${a}" style="fill:${col};font-family:${FONT};font-weight:500;font-size:36px">${esc(t)}</text>`;
     if(s.top) S+=T(c.top,c.vert?'start':'middle',s.top); if(s.bot) S+=T(c.bot,c.vert?'end':'middle',s.bot); }
   return S;
@@ -1043,9 +1048,9 @@ function drawArrow(s,P,FONT,o){
 function arrowIcon(v){
   const s={t:'arrow',v,x1:0,y1:0,x2:2,y2:0}, G=arrowGeo(s);
   let a=1e9,b=-1e9,c=1e9,d=-1e9; for(const q of G.pts){ a=Math.min(a,q[0]); b=Math.max(b,q[0]); c=Math.min(c,q[1]); d=Math.max(d,q[1]); }
-  a-=.15; b+=.15; c-=.15; d+=.15;
-  const sc=Math.min(19/(b-a),17/(d-c),9.5), tx=12-sc*(a+b)/2, ty=12-sc*(c+d)/2;
-  return `<g transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${sc.toFixed(3)})">${drawArrow(s,()=>'currentColor',null,{sw:1.5/sc,hs:(G.curve?4.4/.26:4.6/.3)/sc})}</g>`;
+  const pd=G.curve?.4:.15; a-=pd; b+=pd; c-=pd; d+=pd; /* 머리가 아이콘 밖으로 잘리지 않게 */
+  const sc=Math.min(20/(b-a),20/(d-c),9.5), tx=12-sc*(a+b)/2, ty=12-sc*(c+d)/2;
+  return `<g transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${sc.toFixed(3)})">${drawArrow(s,()=>'currentColor',null,{sw:1.5/sc,hs:(G.curve?6/.26:6.4/.3)/sc,ms:(G.curve?4.4/.26:4.6/.3)/sc})}</g>`;
 }
 // 의자형·보트형 사이클로헥세인 (고리 순서대로)
 const CONF={chair:[[0,0],[.6,-.8],[1.6,-.5],[2.35,-.85],[1.75,-.05],[.75,-.35]],boat:[[0,-.7],[.85,-.2],[1.65,-.2],[2.5,-.7],[1.75,.2],[.75,.2]]};
@@ -1082,9 +1087,40 @@ function setBBox(S,pad){
   S.shapes.forEach(j=>{ const s=M.shapes[j]; if(!s) return; if(s.t==='text'){ const w=textW(s)/2; add(s.x-w,s.y,pad); add(s.x+w,s.y,pad); add(s.x,s.y-.3,pad); add(s.x,s.y+.3,pad); } else for(const p of shapePts(s)) add(p[0],p[1],pad); });
   return a>b?null:{x1:a,x2:b,y1:c,y2:d,cx:(a+b)/2,cy:(c+d)/2};
 }
-function grabPos(S){ return {a:[...S.atoms].map(i=>[i,M.atoms[i].x,M.atoms[i].y]), s:[...S.shapes].map(j=>[j,JSON.parse(JSON.stringify(M.shapes[j]))])}; }
+/* 비공유 전자쌍: a.lp = 방향 각도 목록(라디안, 그림 좌표). 예전 형식(1/true)은 위쪽 하나로 읽는다 */
+const lpList=a=>Array.isArray(a.lp)?a.lp:(a.lp?[-Math.PI/2]:[]);
+/* 원자에 남는 전자로 만들 수 있는 최대 전자쌍 수. 주족 원소만 (전이금속은 null) */
+function lpMax(i){ const a=M.atoms[i]; if(a.ab||!(a.el in VE)) return null; const adj=adjOf(M);
+  let used=0; for(const k of adj[i]){ const o=M.bonds[k].o; used+=o==='a'?1.5:o; }
+  const ne=VE[a.el]-(a.c||0)-Math.ceil(used)-hCount(M,i,adj)-(a.r?1:0)-(a.m?2:0); return Math.max(0,Math.floor(ne/2)); }
+/* 렌더링 때 기록한 원자 글자 상자(LBI)로 전자쌍 점의 중심을 구한다 */
+let LBI=[];
+function lpCenter(i,t){ const a=M.atoms[i], ux=Math.cos(t), uy=Math.sin(t), R=LBI[i]&&LBI[i].R; let d=.3;
+  if(R){ let cur=0; const iv=[]; for(const [x1,x2,y1,y2] of R){ let t0=-1e9,t1=1e9;
+      for(const [p_,dd,lo,hi] of [[a.x,ux,x1,x2],[a.y,uy,y1,y2]]){ if(Math.abs(dd)<1e-9){ if(p_<lo||p_>hi){ t0=1; t1=0; } continue; } let ta=(lo-p_)/dd, tb=(hi-p_)/dd; if(ta>tb){ const q=ta; ta=tb; tb=q; } t0=Math.max(t0,ta); t1=Math.min(t1,tb); }
+      if(t1>Math.max(t0,0)) iv.push([Math.max(t0,0),t1]); }
+    iv.sort((p_,q)=>p_[0]-q[0]); for(const [s0,e0] of iv) if(s0<=cur+.03) cur=Math.max(cur,e0); d=cur+.07; }
+  return [a.x+ux*d,a.y+uy*d]; }
+/* 비어 있는 방향: 결합·수소·전하·위쪽 표시·다른 전자쌍을 피하고, 위·아래·왼쪽·오른쪽을 먼저 고른다 */
+function lpAuto(i){ const a=M.atoms[i], adj=adjOf(M), occ=[];
+  for(const k of adj[i]){ const o=M.atoms[other(M.bonds[k],i)]; occ.push(Math.atan2(o.y-a.y,o.x-a.x)); }
+  const inf=LBI[i]; if(inf&&inf.side) occ.push({r:0,l:Math.PI,d:Math.PI/2,u:-Math.PI/2}[inf.side]); if(inf&&inf.side==='r') occ.push(0); 
+  if(a.r||a.m) occ.push(-Math.PI/2); occ.push(...lpList(a));
+  const gap=t=>occ.reduce((m,d)=>Math.min(m,Math.abs(((t-d)%(2*Math.PI)+3*Math.PI)%(2*Math.PI)-Math.PI)),Math.PI);
+  /* 위·아래·왼쪽·오른쪽 중 60° 이상 트인 방향이 있으면 그중 가장 트인 곳, 없으면 15° 간격으로 가장 트인 곳 */
+  let best=null, bg=-1; for(const t of [-Math.PI/2,Math.PI/2,Math.PI,0]){ const g=gap(t); if(g>=Math.PI/3-1e-6&&g>bg+1e-6){ bg=g; best=t; } } if(best!=null) return best;
+  for(let k=0;k<24;k++){ const t=k*Math.PI/12-Math.PI, g=gap(t); if(g>bg+1e-6){ bg=g; best=t; } } return best; }
+/* 누른 자리 가까이에 있는 전자쌍 번호 (없으면 -1) */
+function lpNear(i,m){ if(!m) return -1; const L=lpList(M.atoms[i]); let best=-1, bd=.2;
+  L.forEach((t,k)=>{ const c=lpCenter(i,t), d=Math.hypot(c[0]-m.x,c[1]-m.y); if(d<bd){ bd=d; best=k; } }); return best; }
+function lpAdd(i,t){ const a=M.atoms[i], mx=lpMax(i), L=lpList(a), el=a.el;
+  if(mx==null){ toast(el+'에는 비공유 전자쌍을 넣을 수 없습니다 (주족 원소만 됩니다).'); return false; }
+  if(L.length>=mx){ toast(mx?el+'에는 비공유 전자쌍을 '+mx+'개까지 넣을 수 있습니다.':el+'에는 남는 전자가 없어 비공유 전자쌍을 넣을 수 없습니다.',2600); return false; }
+  pushUndo(); a.lp=[...L,t]; return true; }
+function grabPos(S){ return {a:[...S.atoms].map(i=>[i,M.atoms[i].x,M.atoms[i].y,lpList(M.atoms[i])]), s:[...S.shapes].map(j=>[j,JSON.parse(JSON.stringify(M.shapes[j]))])}; }
 function applyFrom(G,f,rigid){
-  for(const [i,x,y] of G.a){ const p=f(x,y); M.atoms[i].x=p[0]; M.atoms[i].y=p[1]; }
+  for(const [i,x,y,L] of G.a){ const p=f(x,y); M.atoms[i].x=p[0]; M.atoms[i].y=p[1];
+    if(L&&L.length) M.atoms[i].lp=L.map(t=>{ const q=f(x+Math.cos(t),y+Math.sin(t)); return Math.atan2(q[1]-p[1],q[0]-p[0]); }); } /* 돌리거나 뒤집으면 전자쌍 방향도 같이 */
   for(const [j,o] of G.s){ const s=M.shapes[j];
     if(s.t==='text'){ const p=f(o.x,o.y); s.x=p[0]; s.y=p[1]; }
     else if(isBox(s)&&rigid){ const cx=(o.x1+o.x2)/2, cy=(o.y1+o.y2)/2, p=f(cx,cy), dx=p[0]-cx, dy=p[1]-cy; s.x1=o.x1+dx; s.x2=o.x2+dx; s.y1=o.y1+dy; s.y2=o.y2+dy; }
@@ -1106,6 +1142,27 @@ function link(a,b,o,s){
   else { const B={a,b,o}; if(s) B.s=s; M.bonds.push(B); }
   M.atoms[a].h=null; M.atoms[b].h=null;
 }
+/* ---------- 끌어서 합치기: 옮긴 원자가 다른 원자(결합 끝·기호)에 닿으면 하나로 합친다 ---------- */
+const plainC=a=>a.el==='C'&&!a.ab&&!a.lab&&!a.c&&!a.r&&!lpList(a).length&&!a.m;
+/* 옮기는 원자마다 가장 가까운 고정된 원자를 짝지어 준다 (한 원자는 한 번만) */
+function mergePairs(S){ const thr=Math.max(.28,14/view.s), cand=[];
+  for(const i of S.atoms){ const a=M.atoms[i]; if(!a) continue; M.atoms.forEach((b,j)=>{ if(S.atoms.has(j)) return; const d=Math.hypot(a.x-b.x,a.y-b.y); if(d<thr) cand.push([d,i,j]); }); }
+  cand.sort((p,q)=>p[0]-q[0]); const us=new Set(), ut=new Set(), out=[];
+  for(const [d,i,j] of cand){ if(us.has(i)||ut.has(j)) continue; us.add(i); ut.add(j); out.push([i,j,d]); } return out; }
+/* src를 dst에 합친다: 결합을 dst로 옮기고, 같은 두 원자 사이 결합은 차수가 큰 것 하나만, 둘 사이 결합은 없앤다.
+   dst가 아무 표시 없는 탄소면 src의 기호(원소·전하·작용기 등)를 물려받는다 */
+function mergeAtoms(pairs){
+  const to=new Map(pairs.map(([i,j])=>[i,j]));
+  for(const [i,j] of pairs){ const A=M.atoms[i], B=M.atoms[j]; if(plainC(B)&&!plainC(A)) M.atoms[j]=Object.assign({},A,{x:B.x,y:B.y}); M.atoms[j].h=null; }
+  const best=new Map();
+  M.bonds.forEach(b=>{ const a=to.has(b.a)?to.get(b.a):b.a, c=to.has(b.b)?to.get(b.b):b.b; if(a===c) return;
+    const key=Math.min(a,c)+','+Math.max(a,c), nb=Object.assign({},b,{a,b:c}), old=best.get(key); if(!old||nb.o>old.o) best.set(key,nb); });
+  const map=new Int32Array(M.atoms.length).fill(-1), na=[];
+  M.atoms.forEach((t,i)=>{ if(!to.has(i)){ map[i]=na.length; na.push(t); } });
+  M.atoms=na; M.bonds=[...best.values()].map(b=>Object.assign(b,{a:map[b.a],b:map[b.b]}));
+  M.atoms.forEach(t=>{ t.h=null; });
+  const rs=S_=>({atoms:new Set([...S_.atoms].map(i=>map[to.has(i)?to.get(i):i]).filter(i=>i>=0)),shapes:new Set(S_.shapes)});
+  sel=rs(sel); }
 function deleteItems(aS,bS,sS){
   const touched=new Set();
   M.bonds.forEach((b,k)=>{ if(bS.has(k)){ touched.add(b.a); touched.add(b.b); } });
@@ -1285,7 +1342,7 @@ function ringInfo(){
 const f3=v=>v.toFixed(3);
 function build(P,FONT){
   const adj=adjOf(M), rings=ringInfo();
-  const labeled=M.atoms.map((a,i)=>!!a.ab||a.el!=='C'||!!a.lab||!!a.c||!!a.r||!!a.lp||!!a.m||adj[i].length===0), boxes=[];
+  const labeled=M.atoms.map((a,i)=>!!a.ab||a.el!=='C'||!!a.lab||!!a.c||!!a.r||lpList(a).length>0||!!a.m||adj[i].length===0), boxes=[];
   const ln=(x1,y1,x2,y2,tok,w,ex)=>`<line x1="${f3(x1)}" y1="${f3(y1)}" x2="${f3(x2)}" y2="${f3(y2)}" style="stroke:${P(tok)};stroke-width:${w||.042};stroke-linecap:butt${ex||''}"/>`;
   const T=(x,y,tok,anchor,body,size,sc)=>`<text transform="translate(${f3(x)} ${f3(y)}) scale(${sc||.01})" text-anchor="${anchor}" style="fill:${P(tok)};font-family:${FONT};font-weight:500;font-size:${size||46}px">${body}</text>`;
   let S='', B='';
@@ -1327,7 +1384,7 @@ function build(P,FONT){
     const Pm=miterAt(k,end,ox,oy), d=.09, p1=[Pm[0]+v1[0]*d,Pm[1]+v1[1]*d], p2=[Pm[0]+v2[0]*d,Pm[1]+v2[1]*d];
     return `<path d="M${f3(p1[0])} ${f3(p1[1])}L${f3(Pm[0])} ${f3(Pm[1])}L${f3(p2[0])} ${f3(p2[1])}" style="fill:none;stroke:${P(tok)};stroke-width:${w};stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:8"/>`; };
   // 원자 기호: 결합보다 먼저 배치해 글자 상자(rects)를 구하고, 결합은 그 상자 앞에서 끊는다. 글자는 결합 위에 그린다
-  let Ltxt=''; const rects=[];
+  let Ltxt=''; const rects=[]; LBI=[];
   const bdir=i=>adj[i].map(k=>{ const o=M.atoms[other(M.bonds[k],i)], a=M.atoms[i]; return Math.atan2(o.y-a.y,o.x-a.x); });
   const angGap=(t,ds)=>ds.reduce((m,d)=>Math.min(m,Math.abs(((t-d)%(2*Math.PI)+3*Math.PI)%(2*Math.PI)-Math.PI)),Math.PI);
   /* 수소 위치: 오른쪽 → 왼쪽 → 아래 → 위 중 결합과 60° 이상 떨어진 첫 방향, 없으면 가장 트인 방향 */
@@ -1354,13 +1411,15 @@ function build(P,FONT){
     else if(h&&side==='r'){ const sx=X-we/2; Ltxt+=T(sx,Y,tok,'start',a.el+'H'+sub+sup(hn?-30:-18),0,.01*LS); bx1=sx; bx2=sx+we+hw+wc; R=[[bx1-.04,bx2+.04,...yb]]; }
     else { const sx=X-we/2; Ltxt+=T(sx,Y,tok,'start',a.el+sup(-18),0,.01*LS); bx1=sx; bx2=sx+we+wc; R=[[bx1-.04,bx2+.04,...yb]];
       if(h){ const dyL=(side==='d'?.56:-.56)*LS, hx=X-tW('H')/2; Ltxt+=T(hx,Y+dyL,tok,'start','H'+sub,0,.01*LS); R.push([hx-.04,hx+hw+.04,yb[0]+dyL,yb[1]+dyL]); } }
-    const mk=[]; if(a.r) mk.push('d'); if(a.lp){ if(mk.length) mk.push('g'); mk.push('d','d'); } if(a.m){ if(mk.length) mk.push('g'); for(const ch of a.m) mk.push(ch==='x'?'x':'d'); }
+    const mk=[]; if(a.r) mk.push('d'); if(a.m){ if(mk.length) mk.push('g'); for(const ch of a.m) mk.push(ch==='x'?'x':'d'); }
     const up=side==='u'&&h?.56*LS:0; /* 위에 수소가 있으면 전자 점은 그 위로 */
     if(mk.length){ const sp=.14, gw=.1; let w=0; mk.forEach((q,k)=>{ if(k) w+= q==='g'||mk[k-1]==='g'?gw/2:sp; }); let cx=X-w/2; const my=a.y-.42*LS-up;
       mk.forEach((q,k)=>{ if(k) cx+= q==='g'||mk[k-1]==='g'?gw/2:sp; if(q==='d') Ltxt+=`<circle cx="${f3(cx)}" cy="${f3(my)}" r=".05" style="fill:${P(tok)}"/>`; else if(q==='x') Ltxt+=ln(cx-.05,my-.05,cx+.05,my+.05,tok,.03)+ln(cx-.05,my+.05,cx+.05,my-.05,tok,.03); }); }
-    rects[i]=R;
+    rects[i]=R; LBI[i]={R,side:h?side:null};
     const U=[Math.min(...R.map(r=>r[0])),Math.max(...R.map(r=>r[1])),Math.min(...R.map(r=>r[2])),Math.max(...R.map(r=>r[3]))];
     if(mk.length) U[2]=Math.min(U[2],a.y-.52*LS-up);
+    for(const t of lpList(a)){ const c=lpCenter(i,t), px_=-Math.sin(t)*.07, py_=Math.cos(t)*.07;
+      for(const g of [1,-1]){ const x=c[0]+px_*g, y=c[1]+py_*g; Ltxt+=`<circle cx="${f3(x)}" cy="${f3(y)}" r=".05" style="fill:${P(tok)}"/>`; U[0]=Math.min(U[0],x-.07); U[1]=Math.max(U[1],x+.07); U[2]=Math.min(U[2],y-.07); U[3]=Math.max(U[3],y+.07); } }
     boxes[i]=U;
   });
   /* 원자 i에서 방향 (ux,uy)로 나가는 결합이 글자 상자들을 벗어나는 거리 */
@@ -1405,7 +1464,7 @@ function build(P,FONT){
       if(b.s==='ld'){ B+=ln(x1,y1,x2,y2,col,.042,';stroke-dasharray:.22 .1'); return; }
       if(b.s==='dt'){ B+=ln(x1,y1,x2,y2,col,.055,';stroke-dasharray:.001 .085;stroke-linecap:round'); return; }
       if(b.s==='dd'){ B+=ln(x1,y1,x2,y2,col,.042,';stroke-dasharray:.24 .08 .05 .08'); return; }
-      if(b.s==='ar'){ const hl=.24, hw=.1; B+=ln(x1,y1,x2-ux*hl*.8,y2-uy*hl*.8,col)+`<polygon points="${f3(x2)},${f3(y2)} ${f3(x2-ux*hl+nx*hw)},${f3(y2-uy*hl+ny*hw)} ${f3(x2-ux*hl-nx*hw)},${f3(y2-uy*hl-ny*hw)}" style="fill:${P(col)}"/>`; return; }
+      if(b.s==='ar'){ const hl=.26, hw=.1; B+=ln(x1,y1,x2-ux*hl*.62,y2-uy*hl*.62,col)+`<polygon points="${f3(x2)},${f3(y2)} ${f3(x2-ux*hl+nx*hw)},${f3(y2-uy*hl+ny*hw)} ${f3(x2-ux*hl*.72)},${f3(y2-uy*hl*.72)} ${f3(x2-ux*hl-nx*hw)},${f3(y2-uy*hl-ny*hw)}" style="fill:${P(col)};stroke:${P(col)};stroke-width:.012;stroke-linejoin:miter"/>`; return; }
       if(b.s==='d'){ B+=ln(x1,y1,x2,y2,col,.042,';stroke-dasharray:.08 .09'); return; }
       if(jnS(b.a,k)||jnS(b.b,k)){ cumSeg.push({pts:[jnS(b.a,k)?jn[b.a].out:[x1,y1],jnS(b.b,k)?jn[b.b].out:[x2,y2]],col,w:.042,d:''}); return; }
       B+=ln(x1,y1,x2,y2,col); return;
@@ -1485,6 +1544,7 @@ function render(){
     else if(hover.type==='bond'&&M.bonds[hover.k]){ const b=M.bonds[hover.k], A=M.atoms[b.a], Bt=M.atoms[b.b]; o=hl(A.x,A.y,Bt.x,Bt.y,'accent-soft',.32)+o; }
     else if(hover.type==='shape'&&M.shapes[hover.j]){ const b=setBBox({atoms:new Set(),shapes:new Set([hover.j])},.12); if(b) o+=`<rect x="${f3(b.x1)}" y="${f3(b.y1)}" width="${f3(b.x2-b.x1)}" height="${f3(b.y2-b.y1)}" style="fill:var(--accent-soft)"/>`; } }
   // 미리보기
+  if(drag&&drag.mode==='move'&&drag.merge) for(const [,j] of drag.merge){ const b=M.atoms[j]; if(b) o+=`<circle cx="${f3(b.x)}" cy="${f3(b.y)}" r=".26" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:${f3(2/view.s)}"/>`; }
   if(drag&&drag.pv){ const p=drag.pv;
     if(p.kind==='bond') o+=`<line x1="${f3(p.x1)}" y1="${f3(p.y1)}" x2="${f3(p.x2)}" y2="${f3(p.y2)}" style="stroke:var(--accent);stroke-width:.06;stroke-dasharray:.14 .1;stroke-linecap:round"/><circle cx="${f3(p.x2)}" cy="${f3(p.y2)}" r=".08" style="fill:var(--accent)"/>`;
     else if(p.kind==='arrow') o+=`<polyline points="${arrowGeo({v:V.arrow,x1:p.x1,y1:p.y1,x2:p.x2,y2:p.y2}).pts.map(q=>f3(q[0])+','+f3(q[1])).join(' ')}" style="fill:none;stroke:var(--accent);stroke-width:.05;stroke-dasharray:.14 .1"/>`;
@@ -1496,6 +1556,8 @@ function render(){
         o+=`<line x1="${f3(a[0]+nx_*.12+ux_*.11)}" y1="${f3(a[1]+ny_*.12+uy_*.11)}" x2="${f3(b[0]+nx_*.12-ux_*.11)}" y2="${f3(b[1]+ny_*.12-uy_*.11)}" style="stroke:var(--accent);stroke-width:.05;stroke-linecap:round"/>`; }
       P.forEach(q=>{ o+=`<circle cx="${f3(q[0])}" cy="${f3(q[1])}" r=".06" style="fill:var(--accent)"/>`; }); }
     else if(p.kind==='lasso') o+=`<polygon points="${p.pts.map(q=>f3(q.x)+','+f3(q.y)).join(' ')}" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:${f3(1.2*px)};stroke-dasharray:${f3(5*px)} ${f3(4*px)}"/>`;
+    else if(p.kind==='lp'&&M.atoms[p.i]){ const c=lpCenter(p.i,p.t), px_=-Math.sin(p.t)*.07, py_=Math.cos(p.t)*.07;
+      for(const g of [1,-1]) o+=`<circle cx="${f3(c[0]+px_*g)}" cy="${f3(c[1]+py_*g)}" r=".065" style="fill:var(--accent)"/>`; }
   }
   ovl.innerHTML=o;
 }
@@ -1524,9 +1586,9 @@ const STRIPS={
   multi:[['double','이중결합'],['bd','굵은+얇은 이중결합'],['pd','실선+점선 이중결합'],['xd','양쪽 점선 이중결합'],['pdd','실선+일점쇄선 이중결합'],['pt','실선+점 이중결합'],['cx','교차 이중결합 (cis/trans 미정)'],['triple','삼중결합']],
   ring:[['r6a','벤젠'],['r5a','사이클로펜타다이엔 (콘쥬게이티드 5원자 고리)'],['r3','3원자 고리'],['r4','4원자 고리'],['r5','5원자 고리'],['r6','6원자 고리'],['r7','7원자 고리'],['r8','8원자 고리'],['|'],['chair','의자형 사이클로헥세인'],['boat','보트형 사이클로헥세인']],
   arrow:[['fwd','반응 화살표'],['big','반응 화살표 (큰 머리)'],['cond','반응 화살표 + 조건 글자'],['hu','반쪽 화살표 (위)'],['hd','반쪽 화살표 (아래)'],['open','열린 머리 화살표'],['eq','평형 화살표'],['res','공명 화살표'],['x','반응 안 됨 (✕)'],['sl','다단계 생략 (//)'],['retro','역합성 화살표'],
-    ['|'],['c1u','곡선 화살표 (얕게, 위)'],['c2u','곡선 화살표 (반원, 위)'],['c3u','곡선 화살표 (깊게, 위)'],['cO','원형 화살표'],['c1d','곡선 화살표 (얕게, 아래)'],['c2d','곡선 화살표 (반원, 아래)'],['c3d','곡선 화살표 (깊게, 아래)'],
-    ['|'],['f1u','반쪽 곡선 화살표 · 전자 1개 (얕게, 위)'],['f2u','반쪽 곡선 화살표 (반원, 위)'],['f3u','반쪽 곡선 화살표 (깊게, 위)'],['fO','반쪽 원형 화살표'],['f1d','반쪽 곡선 화살표 (얕게, 아래)'],['f2d','반쪽 곡선 화살표 (반원, 아래)'],['f3d','반쪽 곡선 화살표 (깊게, 아래)'],
-    ['|'],['b1u','양방향 곡선 화살표 (위)'],['b1d','양방향 곡선 화살표 (아래)'],['b2u','양방향 곡선 화살표 (반원)'],['bO','양방향 원형 화살표']],
+    ['|'],['c1u','곡선 화살표 (얕게, 위)'],['c2u','곡선 화살표 (반원, 위)'],['c3u','곡선 화살표 (깊게, 위)'],['cO','원형 화살표 (위)'],['c1d','곡선 화살표 (얕게, 아래)'],['c2d','곡선 화살표 (반원, 아래)'],['c3d','곡선 화살표 (깊게, 아래)'],['cOd','원형 화살표 (아래)'],
+    ['|'],['f1u','반쪽 곡선 화살표 · 전자 1개 (얕게, 위)'],['f2u','반쪽 곡선 화살표 (반원, 위)'],['f3u','반쪽 곡선 화살표 (깊게, 위)'],['fO','반쪽 원형 화살표 (위)'],['f1d','반쪽 곡선 화살표 (얕게, 아래)'],['f2d','반쪽 곡선 화살표 (반원, 아래)'],['f3d','반쪽 곡선 화살표 (깊게, 아래)'],['fOd','반쪽 원형 화살표 (아래)'],
+    ['|'],['b1u','양방향 곡선 화살표 (위)'],['b1d','양방향 곡선 화살표 (아래)'],['b2u','양방향 곡선 화살표 (반원)'],['bO','양방향 원형 화살표 (위)'],['bOd','양방향 원형 화살표 (아래)']],
   shape:[['rect','사각형'],['round','둥근 사각형'],['ellipse','타원']],
   bracket:[['sq','대괄호'],['paren','소괄호'],['curly','중괄호']],
   charge:[['+','양전하 +1','plus'],['-','음전하 −1','minus'],['rad','라디칼','rad'],['rc','라디칼 양이온 •+','rc'],['ra','라디칼 음이온 •−','ra'],['lp','비공유 전자쌍 ••','lp'],['xd','전자 표시 ×•','ex1'],['dx','전자 표시 •×','dx'],['xx','전자 표시 ××','xx'],['0','전하·표시 없애기','zero']],
@@ -1539,7 +1601,7 @@ const ROT={ccw15:-15,cw15:15,ccw90:-90,cw90:90,'180':180};
 const HINTS={
   hand:'분자나 도형을 끌어서 옮깁니다. 화면 이동·확대는 두 손가락으로 합니다.',
   erase:'한 손가락으로 문지르면 지나간 원자·결합·도형을 한 번에 지웁니다.',
-  atom:()=>`${V.atom}: 원자를 탭하면 바꾸고, 빈 곳을 탭하면 놓고, 원자에서 끌면 결합과 함께 붙입니다.`,
+  atom:()=>`${V.atom}: 원자를 탭하면 바꾸고, 빈 곳을 탭하면 놓습니다.`,
   text:'빈 곳을 탭하면 글자를 넣고, 원자를 탭하면 원소 기호나 작용기(OMe, COOH…)로 바꿉니다.',
   select:'원자·결합·고리 안쪽을 끌면 그 부분만 옮기고, 빈 곳을 끌면 영역을 선택합니다. 선택한 것을 끌면 함께 옮기고, 위쪽 손잡이를 끌면 회전합니다.',
   rotate:'분자를 탭하면 고른 각도만큼, 끌면 자유롭게 돌립니다.',
@@ -1693,6 +1755,7 @@ function paintSet(S,tok){
 }
 
 /* ---------- 탭 ---------- */
+let tapM=null; /* 마지막 탭의 그림 좌표 */
 function tap(hit){
   switch(tool){
   case 'pickAttach': { if(hit.type==='atom'&&sel.atoms.has(hit.i)){ tool=pendingTool||'select'; syncPressed(); openSaveGroup(hit.i,null); } else toast('선택한 구조 안에서 붙는 원자를 탭하세요.'); return false; }
@@ -1727,13 +1790,13 @@ function tap(hit){
     if(hit.type!=='none') return false; pushUndo(); { const w=V.arrow==='cond'?1.3:1; M.shapes.push({t:'arrow',v:V.arrow,x1:hit.x-w,y1:hit.y,x2:hit.x+w,y2:hit.y}); }
     if(V.arrow==='cond') setTimeout(()=>openCond(M.shapes.length-1),0); return true;
   case 'shape': case 'bracket': if(tool==='bracket'&&V.brm&&hit.type==='shape'&&M.shapes[hit.j].t==='br'){ pushUndo(); markBr(M.shapes[hit.j],V.brm); return true; } if(hit.type!=='none') return false; pushUndo(); M.shapes.push({t:tool==='shape'?'rect':'br',v:V[tool],x1:hit.x-1.2,y1:hit.y-.8,x2:hit.x+1.2,y2:hit.y+.8}); return true;
-  case 'charge': { if(hit.type!=='atom'||M.atoms[hit.i].ab) return false; pushUndo(); const a=M.atoms[hit.i];
-    const v=V.charge;
+  case 'charge': { if(hit.type!=='atom'||M.atoms[hit.i].ab) return false; const v=V.charge;
+    if(v==='lp'){ const a=M.atoms[hit.i], k=lpNear(hit.i,tapM); if(k>=0){ pushUndo(); a.lp=lpList(a).filter((_,q)=>q!==k); return true; } return lpAdd(hit.i,lpAuto(hit.i)); }
+    pushUndo(); const a=M.atoms[hit.i];
     if(v==='+') a.c=Math.min(3,(a.c||0)+1); else if(v==='-') a.c=Math.max(-3,(a.c||0)-1); else if(v==='rad') a.r=a.r?0:1;
     else if(v==='rc'||v==='ra'){ const q=v==='rc'?1:-1, on=a.r&&a.c===q; a.r=on?0:1; a.c=on?0:q; }
-    else if(v==='lp') a.lp=a.lp?0:1;
     else if(v==='xd'||v==='dx'||v==='xx'){ if(a.m===v) delete a.m; else a.m=v; }
-    else { a.c=0; a.r=0; a.lp=0; delete a.m; }
+    else { a.c=0; a.r=0; delete a.lp; delete a.m; }
     a.h=null; return true; }
   case 'color': { if(hit.type==='none') return false; const k=V.color==='ink'?undefined:V.color; pushUndo();
     if(hit.type==='atom') M.atoms[hit.i].k=k; else if(hit.type==='bond') M.bonds[hit.k].k=k; else M.shapes[hit.j].k=k; return true; }
@@ -1795,7 +1858,8 @@ svg.addEventListener('pointermove',e=>{
     for(let k=1;k<=n;k++){ const t=k/n; eraseAt(drag.E,last.x+(m.x-last.x)*t,last.y+(m.y-last.y)*t); }
     drag.trail.push(m); drag.moved=drag.moved||Math.hypot(p.px-drag.start.px,p.py-drag.start.py)>=7; render(); return;
   }
-  if(!drag.moved&&Math.hypot(p.px-drag.start.px,p.py-drag.start.py)<7) return;
+  /* 원소 도구는 끌기 기능이 없으므로 손가락이 조금 흔들려도 탭으로 본다 */
+  if(!drag.moved&&Math.hypot(p.px-drag.start.px,p.py-drag.start.py)<(tool==='atom'?24:7)) return;
   if(drag.mode==='ring'){ drag.moved=true; drag.pv=ringPv(drag.hit,m); render(); return; }
   const h=drag.hit;
   if(!drag.moved){
@@ -1807,7 +1871,8 @@ svg.addEventListener('pointermove',e=>{
       if(h.type!=='none'||rf){ drag.mode='move'; drag.set=rf||partOf(h); sel={atoms:new Set(drag.set.atoms),shapes:new Set(drag.set.shapes)}; updateCopy(); }
       else { drag.mode=V.select==='lasso'?'lasso':'marq'; drag.pts=[drag.sm]; } }
     else if(tool==='rotate'&&h.type!=='none'&&!oneAtom(fragOf(h))){ drag.mode='rot'; drag.set=fragOf(h); }
-    else if((tool==='bond'||tool==='multi'||tool==='atom')&&(h.type==='atom'||h.type==='none')) drag.mode='draw';
+    else if((tool==='bond'||tool==='multi')&&(h.type==='atom'||h.type==='none')) drag.mode='draw';
+    else if(tool==='charge'&&V.charge==='lp'&&h.type==='atom'&&!M.atoms[h.i].ab){ drag.mode='lp'; drag.lpi=h.i; drag.lpk=lpNear(h.i,drag.sm); }
     else if(tool==='arrow') drag.mode='arrow';
     else if(tool==='shape'||tool==='bracket') drag.mode='box';
     else drag.mode='none';
@@ -1816,10 +1881,11 @@ svg.addEventListener('pointermove',e=>{
       if(drag.isSel){ const F=selFrame(); drag.F0=Object.assign({},F); if(drag.mode==='rot') drag.c=[F.cx,F.cy]; }
       drag.a0=Math.atan2(drag.sm.y-drag.c[1],drag.sm.x-drag.c[0]); }
   }
-  if(drag.mode==='move'){ const dx=m.x-drag.sm.x, dy=m.y-drag.sm.y; applyFrom(drag.G,(x,y)=>[x+dx,y+dy],true); render(); }
+  if(drag.mode==='move'){ const dx=m.x-drag.sm.x, dy=m.y-drag.sm.y; applyFrom(drag.G,(x,y)=>[x+dx,y+dy],true); drag.merge=mergePairs(drag.set); render(); }
   else if(drag.mode==='rot'){ let a=Math.atan2(m.y-drag.c[1],m.x-drag.c[0])-drag.a0; if(h.type==='handle') a=Math.atan2(m.y-drag.c[1],m.x-drag.c[0])+Math.PI/2-(drag.F0?drag.F0.ang:0); const st=V.rotate.endsWith('15')?15:1; a=Math.round(a/D2R/st)*st*D2R; applyFrom(drag.G,rotF(drag.c[0],drag.c[1],a),true); render(); }
   else if(drag.mode==='draw'){ let sx,sy,si=-1; if(h.type==='atom'){ sx=M.atoms[h.i].x; sy=M.atoms[h.i].y; si=h.i; } else { sx=drag.sm.x; sy=drag.sm.y; }
     const end=snapEnd(sx,sy,p.px,p.py,si); drag.pv={kind:'bond',x1:sx,y1:sy,x2:end.x,y2:end.y,end,si}; render(); }
+  else if(drag.mode==='lp'){ const a=M.atoms[drag.lpi]; drag.pv={kind:'lp',i:drag.lpi,t:Math.round(Math.atan2(m.y-a.y,m.x-a.x)/(Math.PI/12))*(Math.PI/12)}; render(); }
   else if(drag.mode==='arrow'){ let x2=m.x, y2=m.y; const t=Math.atan2(y2-drag.sm.y,x2-drag.sm.x), r=Math.hypot(x2-drag.sm.x,y2-drag.sm.y), sn=Math.round(t/(Math.PI/12))*(Math.PI/12); if(!isCurve(V.arrow)){ x2=drag.sm.x+r*Math.cos(sn); y2=drag.sm.y+r*Math.sin(sn); } drag.pv={kind:'arrow',x1:drag.sm.x,y1:drag.sm.y,x2,y2}; render(); }
   else if(drag.mode==='box'||drag.mode==='marq'){ drag.pv={kind:drag.mode,x1:drag.sm.x,y1:drag.sm.y,x2:m.x,y2:m.y}; render(); }
   else if(drag.mode==='lasso'){ drag.pts.push(m); drag.pv={kind:'lasso',pts:drag.pts}; render(); }
@@ -1835,12 +1901,19 @@ function endPtr(e,cancelled){
   if(d.mode==='erase'){
     if(d.E.a.size||d.E.b.size||d.E.s.size){ pushUndo(); deleteItems(d.E.a,d.E.b,d.E.s); changed(); } else render(); return; }
   if(d.mode==='ring'&&d.pv){ pushUndo(); placeRingPts(d.pv.pts,d.pv.ar,d.pv.fix); changed(); return; }
-  if(!d.moved){ if(tap(d.hit)) changed(); else render(); return; }
-  if(d.mode==='move'||d.mode==='rot'){ undoS.push(d.snap); redoS.length=0; changed(); return; }
+  if(!d.moved){ tapM=d.sm; if(tap(d.hit)) changed(); else render(); return; }
+  if(d.mode==='move'){ const pr=mergePairs(d.set);
+    if(pr.length){ const [i,j]=pr[0], dx=M.atoms[j].x-M.atoms[i].x, dy=M.atoms[j].y-M.atoms[i].y; applyFrom(grabPos(d.set),(x,y)=>[x+dx,y+dy],true);
+      mergeAtoms(mergePairs(d.set)); toast(pr.length>1?'원자 '+pr.length+'쌍을 합쳤습니다.':'원자를 합쳤습니다.'); }
+    undoS.push(d.snap); redoS.length=0; changed(); return; }
+  if(d.mode==='rot'){ undoS.push(d.snap); redoS.length=0; changed(); return; }
   if(d.mode==='draw'&&d.pv){
     pushUndo(); const p=d.pv, el=tool==='atom'?V.atom:'C', o=tool==='multi'?(V.multi==='triple'?3:2):1, s=tool==='bond'&&V.bond!=='single'?V.bond:tool==='multi'&&V.multi!=='double'&&V.multi!=='triple'?V.multi:null;
     const i=p.si>=0?p.si:atomAt(p.x1,p.y1,'C'), j=p.end.i>=0?p.end.i:atomAt(p.x2,p.y2,el);
     if(i!==j){ link(i,j,o,s); if(tool==='atom'&&el==='C'){ M.atoms[j].lab=1; if(p.si<0) M.atoms[i].lab=1; } } changed(); return; }
+  if(d.mode==='lp'&&d.pv){ const a=M.atoms[d.lpi];
+    if(d.lpk>=0){ pushUndo(); const L=lpList(a).slice(); L[d.lpk]=d.pv.t; a.lp=L; changed(); return; } /* 있던 전자쌍을 끌어 옮기기 */
+    if(lpAdd(d.lpi,d.pv.t)) changed(); else render(); return; }
   if(d.mode==='arrow'&&d.pv&&Math.hypot(d.pv.x2-d.pv.x1,d.pv.y2-d.pv.y1)>.3){ pushUndo(); M.shapes.push({t:'arrow',v:V.arrow,x1:d.pv.x1,y1:d.pv.y1,x2:d.pv.x2,y2:d.pv.y2}); changed(); if(V.arrow==='cond') openCond(M.shapes.length-1); return; }
   if(d.mode==='box'&&d.pv&&Math.abs(d.pv.x2-d.pv.x1)>.2&&Math.abs(d.pv.y2-d.pv.y1)>.2){ pushUndo(); M.shapes.push({t:tool==='shape'?'rect':'br',v:V[tool],x1:d.pv.x1,y1:d.pv.y1,x2:d.pv.x2,y2:d.pv.y2}); changed(); return; }
   if(d.mode==='marq'||d.mode==='lasso'){
